@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<Scene_Segmentation>
+    <Timestamp_list>
+        <Timestamp id="T0">0.00</Timestamp>
+        <Timestamp id="T1">11.52</Timestamp>
+        <Timestamp id="T2">19.16</Timestamp>
+        <Timestamp id="T3">105.00</Timestamp>
+        <Timestamp id="T4">140.40</Timestamp>
+        <Timestamp id="T5">1271.52</Timestamp>
+        <Timestamp id="T6">1342.48</Timestamp>
+        <Timestamp id="T7">1996.52</Timestamp>
+        <Timestamp id="T8">2214.28</Timestamp>
+        <Timestamp id="T9">2217.00</Timestamp>
+        <Timestamp id="T10">2626.32</Timestamp>
+    </Timestamp_list>
+    <Scene_list>
+        <scene id="Sc1">
+            <begintime>T0</begintime>
+            <endtime>T1</endtime>
+        </scene>
+        <scene id="Sc2">
+            <begintime>T1</begintime>
+            <endtime>T2</endtime>
+        </scene>
+        <scene id="Sc3">
+            <begintime>T2</begintime>
+            <endtime>T3</endtime>
+        </scene>
+        <scene id="Sc4">
+            <begintime>T3</begintime>
+            <endtime>T4</endtime>
+        </scene>
+        <scene id="Sc5">
+            <begintime>T4</begintime>
+            <endtime>T5</endtime>
+        </scene>
+        <scene id="Sc6">
+            <begintime>T5</begintime>
+            <endtime>T6</endtime>
+        </scene>
+        <scene id="Sc7">
+            <begintime>T6</begintime>
+            <endtime>T7</endtime>
+        </scene>
+        <scene id="Sc8">
+            <begintime>T7</begintime>
+            <endtime>T8</endtime>
+        </scene>
+        <scene id="Sc9">
+            <begintime>T8</begintime>
+            <endtime>T9</endtime>
+        </scene>
+        <scene id="Sc10">
+            <begintime>T9</begintime>
+            <endtime>T10</endtime>
+        </scene>
+    </Scene_list>
+</Scene_Segmentation>

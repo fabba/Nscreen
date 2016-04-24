@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<Scene_Segmentation>
+    <Timestamp_list>
+        <Timestamp id="T0">0.00</Timestamp>
+        <Timestamp id="T1">104.20</Timestamp>
+        <Timestamp id="T2">419.24</Timestamp>
+        <Timestamp id="T3">478.84</Timestamp>
+        <Timestamp id="T4">543.24</Timestamp>
+        <Timestamp id="T5">547.52</Timestamp>
+        <Timestamp id="T6">694.04</Timestamp>
+        <Timestamp id="T7">848.32</Timestamp>
+        <Timestamp id="T8">855.00</Timestamp>
+        <Timestamp id="T9">1062.12</Timestamp>
+        <Timestamp id="T10">1149.64</Timestamp>
+        <Timestamp id="T11">1162.68</Timestamp>
+        <Timestamp id="T12">1231.00</Timestamp>
+        <Timestamp id="T13">1252.80</Timestamp>
+        <Timestamp id="T14">1296.56</Timestamp>
+        <Timestamp id="T15">1337.64</Timestamp>
+        <Timestamp id="T16">1342.60</Timestamp>
+        <Timestamp id="T17">1376.52</Timestamp>
+        <Timestamp id="T18">1414.36</Timestamp>
+        <Timestamp id="T19">1426.96</Timestamp>
+        <Timestamp id="T20">1557.36</Timestamp>
+        <Timestamp id="T21">1589.36</Timestamp>
+        <Timestamp id="T22">1637.12</Timestamp>
+        <Timestamp id="T23">1673.20</Timestamp>
+        <Timestamp id="T24">1676.96</Timestamp>
+        <Timestamp id="T25">1740.32</Timestamp>
+    </Timestamp_list>
+    <Scene_list>
+        <scene id="Sc1">
+            <begintime>T0</begintime>
+            <endtime>T1</endtime>
+        </scene>
+        <scene id="Sc2">
+            <begintime>T1</begintime>
+            <endtime>T2</endtime>
+        </scene>
+        <scene id="Sc3">
+            <begintime>T2</begintime>
+            <endtime>T3</endtime>
+        </scene>
+        <scene id="Sc4">
+            <begintime>T3</begintime>
+            <endtime>T4</endtime>
+        </scene>
+        <scene id="Sc5">
+            <begintime>T4</begintime>
+            <endtime>T5</endtime>
+        </scene>
+        <scene id="Sc6">
+            <begintime>T5</begintime>
+            <endtime>T6</endtime>
+        </scene>
+        <scene id="Sc7">
+            <begintime>T6</begintime>
+            <endtime>T7</endtime>
+        </scene>
+        <scene id="Sc8">
+            <begintime>T7</begintime>
+            <endtime>T8</endtime>
+        </scene>
+        <scene id="Sc9">
+            <begintime>T8</begintime>
+            <endtime>T9</endtime>
+        </scene>
+        <scene id="Sc10">
+            <begintime>T9</begintime>
+            <endtime>T10</endtime>
+        </scene>
+        <scene id="Sc11">
+            <begintime>T10</begintime>
+            <endtime>T11</endtime>
+        </scene>
+        <scene id="Sc12">
+            <begintime>T11</begintime>
+            <endtime>T12</endtime>
+        </scene>
+        <scene id="Sc13">
+            <begintime>T12</begintime>
+            <endtime>T13</endtime>
+        </scene>
+        <scene id="Sc14">
+            <begintime>T13</begintime>
+            <endtime>T14</endtime>
+        </scene>
+        <scene id="Sc15">
+            <begintime>T14</begintime>
+            <endtime>T15</endtime>
+        </scene>
+        <scene id="Sc16">
+            <begintime>T15</begintime>
+            <endtime>T16</endtime>
+        </scene>
+        <scene id="Sc17">
+            <begintime>T16</begintime>
+            <endtime>T17</endtime>
+        </scene>
+        <scene id="Sc18">
+            <begintime>T17</begintime>
+            <endtime>T18</endtime>
+        </scene>
+        <scene id="Sc19">
+            <begintime>T18</begintime>
+            <endtime>T19</endtime>
+        </scene>
+        <scene id="Sc20">
+            <begintime>T19</begintime>
+            <endtime>T20</endtime>
+        </scene>
+        <scene id="Sc21">
+            <begintime>T20</begintime>
+            <endtime>T21</endtime>
+        </scene>
+        <scene id="Sc22">
+            <begintime>T21</begintime>
+            <endtime>T22</endtime>
+        </scene>
+        <scene id="Sc23">
+            <begintime>T22</begintime>
+            <endtime>T23</endtime>
+        </scene>
+        <scene id="Sc24">
+            <begintime>T23</begintime>
+            <endtime>T24</endtime>
+        </scene>
+        <scene id="Sc25">
+            <begintime>T24</begintime>
+            <endtime>T25</endtime>
+        </scene>
+    </Scene_list>
+</Scene_Segmentation>

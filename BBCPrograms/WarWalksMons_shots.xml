@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<Shot_Segmentation>
+    <Timestamp_list>
+        <Timestamp id="T0">0.00</Timestamp>
+        <Timestamp id="T1">19.92</Timestamp>
+        <Timestamp id="T2">32.60</Timestamp>
+        <Timestamp id="T3">42.36</Timestamp>
+        <Timestamp id="T4">44.56</Timestamp>
+        <Timestamp id="T5">56.24</Timestamp>
+        <Timestamp id="T6">62.96</Timestamp>
+        <Timestamp id="T7">70.24</Timestamp>
+        <Timestamp id="T8">94.88</Timestamp>
+        <Timestamp id="T9">112.16</Timestamp>
+        <Timestamp id="T10">142.92</Timestamp>
+        <Timestamp id="T11">148.20</Timestamp>
+        <Timestamp id="T12">161.40</Timestamp>
+        <Timestamp id="T13">176.08</Timestamp>
+        <Timestamp id="T14">190.16</Timestamp>
+        <Timestamp id="T15">219.48</Timestamp>
+        <Timestamp id="T16">221.48</Timestamp>
+        <Timestamp id="T17">240.48</Timestamp>
+        <Timestamp id="T18">244.64</Timestamp>
+        <Timestamp id="T19">254.16</Timestamp>
+        <Timestamp id="T20">260.24</Timestamp>
+        <Timestamp id="T21">264.72</Timestamp>
+        <Timestamp id="T22">274.36</Timestamp>
+        <Timestamp id="T23">280.48</Timestamp>
+        <Timestamp id="T24">287.72</Timestamp>
+        <Timestamp id="T25">332.16</Timestamp>
+        <Timestamp id="T26">335.04</Timestamp>
+        <Timestamp id="T27">339.64</Timestamp>
+        <Timestamp id="T28">349.12</Timestamp>
+        <Timestamp id="T29">354.84</Timestamp>
+        <Timestamp id="T30">359.32</Timestamp>
+        <Timestamp id="T31">362.48</Timestamp>
+        <Timestamp id="T32">367.52</Timestamp>
+        <Timestamp id="T33">369.20</Timestamp>
+        <Timestamp id="T34">384.48</Timestamp>
+        <Timestamp id="T35">389.08</Timestamp>
+        <Timestamp id="T36">409.20</Timestamp>
+        <Timestamp id="T37">415.56</Timestamp>
+        <Timestamp id="T38">459.24</Timestamp>
+        <Timestamp id="T39">474.00</Timestamp>
+        <Timestamp id="T40">507.24</Timestamp>
+        <Timestamp id="T41">516.28</Timestamp>
+        <Timestamp id="T42">522.36</Timestamp>
+        <Timestamp id="T43">526.40</Timestamp>
+        <Timestamp id="T44">530.92</Timestamp>
+        <Timestamp id="T45">536.68</Timestamp>
+        <Timestamp id="T46">538.92</Timestamp>
+        <Timestamp id="T47">542.04</Timestamp>
+        <Timestamp id="T48">546.40</Timestamp>
+        <Timestamp id="T49">550.24</Timestamp>
+        <Timestamp id="T50">556.44</Timestamp>
+        <Timestamp id="T51">563.04</Timestamp>
+    </Timestamp_list>
+    <Shot_list>
+        <shot id="Sh1">
+            <begintime>T0</begintime>
+            <endtime>T1</endtime>
+        </shot>
+        <shot id="Sh2">
+            <begintime>T1</begintime>
+            <endtime>T2</endtime>
+        </shot>
+        <shot id="Sh3">
+            <begintime>T2</begintime>
+            <endtime>T3</endtime>
+        </shot>
+        <shot id="Sh4">
+            <begintime>T3</begintime>
+            <endtime>T4</endtime>
+        </shot>
+        <shot id="Sh5">
+            <begintime>T4</begintime>
+            <endtime>T5</endtime>
+        </shot>
+        <shot id="Sh6">
+            <begintime>T5</begintime>
+            <endtime>T6</endtime>
+        </shot>
+        <shot id="Sh7">
+            <begintime>T6</begintime>
+            <endtime>T7</endtime>
+        </shot>
+        <shot id="Sh8">
+            <begintime>T7</begintime>
+            <endtime>T8</endtime>
+        </shot>
+        <shot id="Sh9">
+            <begintime>T8</begintime>
+            <endtime>T9</endtime>
+        </shot>
+        <shot id="Sh10">
+            <begintime>T9</begintime>
+            <endtime>T10</endtime>
+        </shot>
+        <shot id="Sh11">
+            <begintime>T10</begintime>
+            <endtime>T11</endtime>
+        </shot>
+        <shot id="Sh12">
+            <begintime>T11</begintime>
+            <endtime>T12</endtime>
+        </shot>
+        <shot id="Sh13">
+            <begintime>T12</begintime>
+            <endtime>T13</endtime>
+        </shot>
+        <shot id="Sh14">
+            <begintime>T13</begintime>
+            <endtime>T14</endtime>
+        </shot>
+        <shot id="Sh15">
+            <begintime>T14</begintime>
+            <endtime>T15</endtime>
+        </shot>
+        <shot id="Sh16">
+            <begintime>T15</begintime>
+            <endtime>T16</endtime>
+        </shot>
+        <shot id="Sh17">
+            <begintime>T16</begintime>
+            <endtime>T17</endtime>
+        </shot>
+        <shot id="Sh18">
+            <begintime>T17</begintime>
+            <endtime>T18</endtime>
+        </shot>
+        <shot id="Sh19">
+            <begintime>T18</begintime>
+            <endtime>T19</endtime>
+        </shot>
+        <shot id="Sh20">
+            <begintime>T19</begintime>
+            <endtime>T20</endtime>
+        </shot>
+        <shot id="Sh21">
+            <begintime>T20</begintime>
+            <endtime>T21</endtime>
+        </shot>
+        <shot id="Sh22">
+            <begintime>T21</begintime>
+            <endtime>T22</endtime>
+        </shot>
+        <shot id="Sh23">
+            <begintime>T22</begintime>
+            <endtime>T23</endtime>
+        </shot>
+        <shot id="Sh24">
+            <begintime>T23</begintime>
+            <endtime>T24</endtime>
+        </shot>
+        <shot id="Sh25">
+            <begintime>T24</begintime>
+            <endtime>T25</endtime>
+        </shot>
+        <shot id="Sh26">
+            <begintime>T25</begintime>
+            <endtime>T26</endtime>
+        </shot>
+        <shot id="Sh27">
+            <begintime>T26</begintime>
+            <endtime>T27</endtime>
+        </shot>
+        <shot id="Sh28">
+            <begintime>T27</begintime>
+            <endtime>T28</endtime>
+        </shot>
+        <shot id="Sh29">
+            <begintime>T28</begintime>
+            <endtime>T29</endtime>
+        </shot>
+        <shot id="Sh30">
+            <begintime>T29</begintime>
+            <endtime>T30</endtime>
+        </shot>
+        <shot id="Sh31">
+            <begintime>T30</begintime>
+            <endtime>T31</endtime>
+        </shot>
+        <shot id="Sh32">
+            <begintime>T31</begintime>
+            <endtime>T32</endtime>
+        </shot>
+        <shot id="Sh33">
+            <begintime>T32</begintime>
+            <endtime>T33</endtime>
+        </shot>
+        <shot id="Sh34">
+            <begintime>T33</begintime>
+            <endtime>T34</endtime>
+        </shot>
+        <shot id="Sh35">
+            <begintime>T34</begintime>
+            <endtime>T35</endtime>
+        </shot>
+        <shot id="Sh36">
+            <begintime>T35</begintime>
+            <endtime>T36</endtime>
+        </shot>
+        <shot id="Sh37">
+            <begintime>T36</begintime>
+            <endtime>T37</endtime>
+        </shot>
+        <shot id="Sh38">
+            <begintime>T37</begintime>
+            <endtime>T38</endtime>
+        </shot>
+        <shot id="Sh39">
+            <begintime>T38</begintime>
+            <endtime>T39</endtime>
+        </shot>
+        <shot id="Sh40">
+            <begintime>T39</begintime>
+            <endtime>T40</endtime>
+        </shot>
+        <shot id="Sh41">
+            <begintime>T40</begintime>
+            <endtime>T41</endtime>
+        </shot>
+        <shot id="Sh42">
+            <begintime>T41</begintime>
+            <endtime>T42</endtime>
+        </shot>
+        <shot id="Sh43">
+            <begintime>T42</begintime>
+            <endtime>T43</endtime>
+        </shot>
+        <shot id="Sh44">
+            <begintime>T43</begintime>
+            <endtime>T44</endtime>
+        </shot>
+        <shot id="Sh45">
+            <begintime>T44</begintime>
+            <endtime>T45</endtime>
+        </shot>
+        <shot id="Sh46">
+            <begintime>T45</begintime>
+            <endtime>T46</endtime>
+        </shot>
+        <shot id="Sh47">
+            <begintime>T46</begintime>
+            <endtime>T47</endtime>
+        </shot>
+        <shot id="Sh48">
+            <begintime>T47</begintime>
+            <endtime>T48</endtime>
+        </shot>
+        <shot id="Sh49">
+            <begintime>T48</begintime>
+            <endtime>T49</endtime>
+        </shot>
+        <shot id="Sh50">
+            <begintime>T49</begintime>
+            <endtime>T50</endtime>
+        </shot>
+        <shot id="Sh51">
+            <begintime>T50</begintime>
+            <endtime>T51</endtime>
+        </shot>
+    </Shot_list>
+</Shot_Segmentation>

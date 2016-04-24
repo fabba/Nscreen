@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<!--
+ --------------------------------------------------------------------------
+ Copyright 2012 British Broadcasting Corporation and Vrije Universiteit 
+ Amsterdam
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ --------------------------------------------------------------------------
+-->
+
+<html>
+ <head>
+  <title id="title">Simple TV: N-Screen Player</title>
+
+  <script type="text/javascript" src="lib/jquery-1.4.4.min.js"></script>
+  <script type="text/javascript" src="lib/play_video.js"></script>
+
+  <script type="text/javascript" src="lib/strophe.js"></script>
+  <script type="text/javascript" src="lib/buttons.js"></script><!-- depends on jquery -->
+
+  <link type="text/css" rel="stylesheet" href="css/player.css" />
+
+
+<script type="text/javascript">
+
+var buttons = null;
+var emp = null;
+var me = null;
+var lastmsg;
+var playvideo = true;
+
+function show_message(msg){
+  if(msg!=lastmsg){
+    $("#overlay").html(msg);
+    $("#overlay").fadeIn().delay(5000).fadeOut('slow');
+    lastmsg = msg;
+  }else{
+   console.log("same");
+  }
+}
+
+// utility function create a temporary group name if none is set
+function tmp_group(){
+  var rand = Math.floor(Math.random()*9999)
+  return String(rand);
+}
+
+
+//determine the group and join it, or make a new group and join it
+
+function init(){
+
+  var my_group = null;
+  var grp_arr = window.location.hash.split("&");
+  var grp =grp_arr[0];
+
+  if(grp){
+     my_group = grp.substring(1);
+  }else{
+     my_group=tmp_group();
+  }
+
+  show_message("Welcome to Simple TV<br /><small>Group is "+my_group+"</small>");
+
+  var pr = tmp_name();
+  buttons = new ButtonsLink({"server":"localhost"});
+  me = new TV(pr,pr);
+  buttons.connect(me,my_group,blink_callback);
+
+ // a simple opton for no video, to make a lightweight testing version
+  var h = window.location.hash;
+  if(h){
+     if(h.match("novideo")){
+        if(h=="false"){
+          playvideo = false;
+        }
+     }
+
+  }
+}
+
+
+// make a temporary name
+function tmp_name(){
+  var rand = Math.floor(Math.random()*9999)
+  //console.log("name!!! "+String(rand));
+  return "telly_"+String(rand);
+}
+
+function blink_callback(blink){
+
+}
+
+
+function makePlayer(){
+
+}
+
+//Adapt ted-talks http requesst to our ow data format
+
+function changeData(data){
+
+  var random_ted = {
+    suggestions: []
+  };
+
+  if(data.talks == null){
+    return random_ted;
+  }  
+
+  for(var i = 0; i < data.talks.length; i++) {  var item = data.talks[i];
+      for(var j = 0; j < data.talks[i].talk.photo_urls.length; j++){
+        if(data.talks[i].talk.photo_urls[j].size == "240x180"){
+          var image = data.talks[i].talk.photo_urls[j].url;
+        }
+      } 
+
+      if(item.talk.media_profile_uris["internal"]){
+
+      random_ted.suggestions.push({ 
+          "pid"   : item.talk.id,
+          "title" : item.talk.name,          
+          "description" : item.talk.description,
+          "date_time" : item.talk.published_at,
+          "media_profile_uris" : item.talk.media_profile_uris,
+          "url" : item.talk.media_profile_uris["internal"]["950k"].uri, //TODO CHANGE THIS
+          "video" : item.talk.media_profile_uris["internal"]["950k"].uri,
+          "speaker" : item.talk.speakers,
+          "image" : image,
+          "manifest" : {
+              "pid"   : item.talk.id,
+              "id" : item.talk.id,          
+              "title" : item.talk.name,
+              "image" : image,
+              "provider" : "ted",
+              "duration" : 1750,
+              "media": {
+                "mp4": {
+                  // "type": "video/x-swf",
+                  "uri": item.talk.media_profile_uris["internal"]["950k"].uri,
+                  "is_live": "false"
+                }
+              },
+              "type": "video/mp4"
+          },
+          "tags" : item.talk.tags
+      });
+
+      }
+      else{
+
+        random_ted.suggestions.push({ 
+          "pid"   : item.talk.id,
+          "title" : item.talk.name,          
+          "description" : item.talk.description,
+          "date_time" : item.talk.published_at,
+          "media_profile_uris" : item.talk.media_profile_uris,
+          "url" : "", //TODO CHANGE THIS
+          "video" : "",
+          "speaker" : item.talk.speakers,
+          "image" : image,
+          "manifest" : {
+              "pid"   : item.talk.id,
+              "id" : item.talk.id,          
+              "title" : item.talk.name,
+              "image" : image,
+              "provider" : "ted",
+              "duration" : 1750,
+              "media": {
+                "mp4": {
+                  // "type": "video/x-swf",
+                  "uri": "",
+                  "is_live": "false"
+                }
+              },
+              "type": "video/mp4"
+          },
+          "tags" : item.talk.tags
+      });
+
+      }
+      
+  }return random_ted; 
+}
+
+$(document).bind('tv_changed', function (e,item) {
+  console.log(item);
+  var programme = item.nowp;
+  var id =  item.nowp.id;
+  me.nowp = item.nowp;
+  $("#title").html(programme["title"]);
+
+  var action = "Play";
+  if(programme && programme["action"]){
+        action = programme["action"];
+  }  
+  show_message(action+"ing "+programme["title"]);
+
+  if(action=="Play"){
+
+    $.ajax({
+          url: "get_tedtalks_by_id.php",
+          type: "POST",
+          async: false,
+          data: {id: id},
+          dataType: "json",
+          success: function (data) {
+              item =  changeData(data); //JSON with suggestions format
+
+              var manifest = item.suggestions[0].manifest;
+              process_manifest(manifest,programme);
+          }
+  });
+
+  //pretty much everything should have a manifest
+    // var manifest = programme["manifest"];
+    // var manifest = item.manifest;
+    // if(manifest){
+    //   console.log("manifest is "+manifest);
+  
+    //     $.ajax({
+    //     url: manifest,
+    //     dataType: "json",
+    //     success: function(data){
+    //      process_manifest(data,programme);
+    //      },
+    //      error: function(jqXHR, textStatus, errorThrown){
+    //      console.log("oh dear[1] "+textStatus);
+    //      }
+    //     }); 
+   }else{
+     alert("no manifest");
+   }
+});
+
+
+
+function process_manifest(manifest_data,programme){
+
+  console.log("inside process_manifest");
+
+   if(manifest_data && manifest_data["limo"]){
+       //two kinds of manifest - one with events and one not
+       // this is the events one
+
+       if(manifest_data["limo"]["event-resources"][0]["link"]){
+
+         $.ajax({
+           url: manifest_data["limo"]["event-resources"][0]["link"],
+           dataType: "json",
+           success: function(data){
+           process_events(data);
+           },
+           error: function(jqXHR, textStatus, errorThrown){
+           console.log("oh dear[2] "+textStatus);
+           }
+         });
+
+       }
+
+       if(manifest_data["limo"]["media-resources"][0]["link"]){
+
+        $.ajax({
+         url: manifest_data["limo"]["media-resources"][0]["link"],
+         dataType: "json",
+           success: function(data){
+             process_manifest(data);
+           },
+           error: function(jqXHR, textStatus, errorThrown){
+             alert("oh dear[3] "+textStatus);
+           }
+        });
+
+       }else{
+         console.log("broken manifest limo file");
+       }
+
+    }else{
+
+      var locally_playable = false;
+
+      if(manifest_data && manifest_data["media"]){
+         var swf = manifest_data["media"]["swf"];
+         var mp4 = manifest_data["media"]["mp4"];
+         var provider = manifest_data["provider"];
+         var formats = {"swf":swf,"mp4":mp4};
+         process_video(programme,formats,provider,"1000","640");
+      }
+    }
+
+}
+
+function process_video(programme,formats,provider,width,height){
+
+  console.log("indise process_video");
+  if(!width){
+     width="760";
+  }
+  if(!height){
+     height = "400";
+  }
+
+  var swf = formats["swf"];
+  var mp4 = formats["mp4"];
+
+
+     if(mp4){
+       var uri = mp4["uri"];
+       $("#player").html("<video id='myvid' width=\"100%\" controls ><source src=\""+uri+"\"></video>");
+
+       //events
+       var myvid = document.getElementById("myvid");
+       if(myvid){
+           myvid.addEventListener('timeupdate',function(){
+
+           if(events_list.length>0){
+              var z = parseInt(myvid.currentTime)+'';//int isn;t really precise enough
+              if(events_list[z] && (!events_list_sent[z])){
+                events_list_sent[z]=true;
+                console.log(events_list_sent);
+                console.log("found event and triggering");
+                console.log(events_list[z]);
+
+                var item = events_list[z];
+                if(item["format"].match("video")){
+////                   item["item_type"]="video";
+                }else{
+                   item["item_type"]="webpage";
+                }
+                if(buttons){
+                  buttons.share(item);
+                }
+              }
+           }else{
+              console.log( "no events");
+           }
+         });
+       }
+
+     }else{
+      if(swf){
+        var uri = swf["uri"];
+        console.log("playing swf "+uri);
+        //pick your swf player here
+        alert("no swf player specififed");
+      }
+
+   }//end else
+
+}//end method
+
+
+
+</script>
+</head>
+<body onload="javascript:init()">
+  
+
+    <div class="vidembed" align="center">
+      <div id="player" class="player">
+      </div>
+    </div>
+
+    <div id="overlay"  style="display:none;" class="overlay">
+    </div>
+</body>
+</html>
+
+
+

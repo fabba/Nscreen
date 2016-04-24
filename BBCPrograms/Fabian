@@ -1,0 +1,34 @@
+import json
+from alchemyapi import AlchemyAPI
+from database import execute_query
+import datetime
+
+def get_enrichment(ids,text,scene,starttime,endtime):
+    
+
+    response = alchemyapi.combined('text', text,{'linkedData':1,'showSourceText':1})
+    print('Scene ',scene,' from ',starttime,' to ',endtime,' Contains keywords:')
+    if response['status'] == 'OK':
+        print response
+        print response['keywords']
+        for keyword in response['keywords'][:3]:
+            print keyword['text']
+    else:
+        print('Error in combined call: ', response['statusInfo'])
+    
+alchemyapi = AlchemyAPI()  
+def get_subs(id,scene_filename):
+    with open(scene_filename, "r") as ins:
+        array = []
+        for line in ins:
+            array.append(line)
+    
+    for idx, val in enumerate(array):
+        if "-->" in val:
+            line = val.split(" --> ")
+            time_start_shot = line[0].split(":")
+            starttime = int(float(time_start_shot[0]))*3600 + int(float(time_start_shot[1]))*60 + int(float(time_start_shot[2]))
+            time_stop_shot = line[1].split(":")
+            endtime = int(float(time_stop_shot[0]))*3600 + int(float(time_stop_shot[1]))*60 + int(float(time_stop_shot[2]))
+            subtitles = execute_query('SELECT ID, content, alchemyapi FROM subtitles WHERE episode = \'{0}\' and start_time > \'{1}\' and end_time < \'{2}\''.format(id,datetime.timedelta(seconds=0),datetime.timedelta(seconds=3000)))
+            get_enrichment(id,subtitles,array[idx+1].split("\n")[0],starttime,endtime)
