@@ -86,6 +86,8 @@ var overlaycounter = null;
 
 // Set of local variables that help us to store later (if so)
 
+var tags = []
+var scenes_tags = []
 var list_watch_later = [];
 var watch_later_json = {};
 var list_watch_later_TED = [];
@@ -1247,7 +1249,20 @@ function insert_suggest_by_tag(tag) {
       html2.push("<div class='navigation_buttons'><img onclick='javascript:navigation(-1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='back' src='images/icons/backward.png' width='30'/><img onclick='javascript:navigation(+1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='forward' src='images/icons/forward.png' width='30'/></div>");
 
       html2.push("<div class=\"p_title_large\" style='text-align:center;'>"+tag+"</div>");
-
+	  $.ajax({
+      type: "POST",
+      url: "get_talks_by_tag.php",
+      async: false,
+      data: {tag: tag},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		html2 = create_html(html2,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+		}
+	}
+	});
       // $.ajax({
       //  url: recently_viewed_json.suggestions[0].manifest,
       //  dataType: "json",
@@ -1311,7 +1326,17 @@ function navigate_by_tag(tag) {
       html2.push("<div class='navigation_buttons'><img onclick='javascript:navigation(-1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='back' src='images/icons/backward.png' width='30'/><img onclick='javascript:navigation(+1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='forward' src='images/icons/forward.png' width='30'/></div>");
 
       html2.push("<div class=\"p_title_large\" style='text-align:center;'>"+tag+"</div>");
-
+	  $.ajax({
+		url: "get_tedtalks_by_id.php",
+		type: "POST",
+		async: false,
+		data: {tag: tag},
+		dataType: "json",
+		success: function (data) {
+			item =  changeData(data); //JSON with suggestions format
+        // recently_viewed_json.suggestions.splice(0,0,item.suggestions[0]);
+		}
+    });
       // $.ajax({
       //  url: recently_viewed_json.suggestions[0].manifest,
       //  dataType: "json",
@@ -3522,7 +3547,9 @@ function watch_video(id,bbcorted) {
 	 
 }
 
-function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,tags,scene_tags){
+function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,tags_video,scene_tags_video){
+	  tags = tags_video;
+	  scene_tags = scene_tags_video;
       var div = $("#"+id);
 	  var bbcorted = 0;
       if( titleRaw.indexOf(":") > -1){
@@ -3597,7 +3624,7 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       html2.push("<div class='navigation_buttons'><img onclick='javascript:navigation(-1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='back' src='/images/icons/backward.png' width='30'/><img onclick='javascript:navigation(+1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='forward' src='/images/icons/forward.png' width='30'/></div>");
       html2.push("<div id=\""+id+"\" pid=\""+pid+"\" href=\""+video+"\"  class=\"large_prog\" style=\"position: relative;\">");
       html2.push("<div class=\"gradient_div\" style=\"text-align: center;  margin-left: 45%; position: absolute; \"> <img class=\"img\" src=\""+img+"\" />");
-      html2.push("<div class=\"play_button\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");return true\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
+      html2.push("<div class=\"play_button\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
       html2.push("<div style='padding-left: 20px; padding-right: 20px; width: 50%; left: 0px; position: absolute;'>");
 	   if (bbcorted == 0){
       html2.push("<div style ='cursor: pointer;'class=\"p_title_large_speaker\" onclick=\"javascript:insert_speaker("+speaker_id+");return true\">"+speaker+':'+"</div>");
@@ -3657,8 +3684,31 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       show_grey_bg();
 		   
       $('#new_overlay').append("<div id=\"more_like_this\" class=\"more_like_this\" style=\"margin-top: 400px;\"><span class=\"sub_title\">MORE LIKE THIS</span><span class=\"more_blue\"><a id ='more_related' onclick='show_related();''>View All &triangledown;</a></span></div>");
-
+	  var html_related = [];
+	  var already_added = [];
+	  for(var i=0; i<tags.length; i++){
+		 $.ajax({
+			type: "POST",
+			url: "get_talks_by_tag.php",
+			async: false,
+			data: {tag: tags[i]},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				
+				dat = data[dat];
+				if(already_added.indexOf(parseInt(dat['id'])) == -1){
+				html_related = create_html(html_related,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				already_added.push(parseInt(dat['id']));}
+				}
+			}
+		}
+		});
+	  }
+	  
       $('#new_overlay').append("<div id='spinner' style=\"float: left;\"></div>");
+	  $('#spinner').append(html_related.join(''));
       $('#new_overlay').append("<div class='clear'></div>");
       check_overflow();
       
@@ -3673,9 +3723,85 @@ function show_video(videoUrl,id,bbcorted,startTime,endTime){
 }
 
 function watch_whole(id,startTime,endTime){
-	$("#new_overlay").html("<div id='confirm' style=' left:10%;position:relative;'><h1>After seeing this scene are you interested in watching the whole video?</h1></div><br> <button style=\"left:25%;position:relative;height:100px; width:100px\" type=\"button\" onclick='javascript:hide_overlay();javascript:watch_whole_confirm("+id+","+startTime+","+endTime+",1);'>Yes!</button><button style=\"left:55%;position:relative;height:100px; width:100px\" type=\"button\" onclick='javascript:hide_overlay();javascript:watch_whole_confirm("+id+","+startTime+","+endTime+",0);'>No</button>")
+	html = [];
+	count_whole = 0;
+	count_tags = 0;
+	html.push('<form id="ratingsform" action="insert_rates.php" method="post">');
+	html.push("<div id='confirm' style='position:absolute;left:20%;'>After seeing this scene are you interested in watching the whole video?</div>");
+	html.push('<br><span name="confirm" style="position:absolute;left:40%;">');
+	html.push('No<input class="star" type="radio" name="rating" value="0"/>');
+	html.push('Yes:<input class="star" type="radio" name="rating" value="1"/>');
+	html.push('</span>');
+	html.push("<br><br><div style='position:absolute;left:20%;'>Please rate the subjects below from not interesting to very intersting</div><br><br>");
+	tags.forEach( function insert_tags(item) { 
+		html.push('<input type="hidden" name="'+count_whole+'" value="'+item+'"></div>');
+		html.push('<div class="'+count_whole+'" name="'+count_whole+'" style="position:absolute;left:20%;" value="'+item+'">'+item);
+		html.push('</div>');
+		html.push('<span name="'+item+'-tagsrate"  class="rating" style="position:absolute;left:40%;overflow: hidden;display: inline-block;">');
+		html.push('<input class="rating-input" id="rating-'+count_whole+'-5" type="radio" name="'+count_whole+'-rating" value="5"/>');
+		html.push('<label for="rating-'+count_whole+'-5" class="rating-star"></label>');
+		html.push('<input class="rating-input" id="rating-'+count_whole+'-4" type="radio" name="'+count_whole+'-rating" value="4"/>');
+		html.push('<label for="rating-'+count_whole+'-4" class="rating-star"></label>');
+		html.push('<input class="rating-input" id="rating-'+count_whole+'-3" type="radio" name="'+count_whole+'-rating" value="3"/>');
+		html.push('<label for="rating-'+count_whole+'-3" class="rating-star"></label>');
+		html.push('<input class="rating-input" id="rating-'+count_whole+'-2" type="radio" name="'+count_whole+'-rating" value="2"/>');
+		html.push('<label for="rating-'+count_whole+'-2" class="rating-star"></label>');
+		html.push('<input class="rating-input" id="rating-'+count_whole+'-1" type="radio" name="'+count_whole+'-rating" value="1"/>');
+		html.push('<label for="rating-'+count_whole+'-1" class="rating-star"></label>');
+		html.push('</span>');		
+		html.push('<br>');
+		count_whole += 1;
+	});
+	scene_tags.forEach(function insert_tags(item) {
+		if(tags.indexOf(item) == -1){
+			html.push('<input type="hidden" name="'+count_tags+'-tags" value="'+item+'"></div>');
+			html.push('<div name="'+item+'-tags" style="position:absolute;left:20%;" value="'+item+'">'+item);
+			html.push('</div>');
+			html.push('<span name="'+item+'-tagsrate"  class="rating" style="position:absolute;left:40%;overflow: hidden;display: inline-block;">');
+			
+			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-5" type="radio" name="'+count_tags+'-tags-rating" value="5"/>');
+			html.push('<label for="rating-input-'+count_tags+'-5" class="rating-star"></label>');
+			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-4" type="radio" name="'+count_tags+'-tags-rating" value="4"/>');
+			html.push('<label for="rating-input-'+count_tags+'-4" class="rating-star"></label>');
+			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-3" type="radio" name="'+count_tags+'-tags-rating" value="3"/>');
+			html.push('<label for="rating-input-'+count_tags+'-3" class="rating-star"></label>');
+			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-2" type="radio" name="'+count_tags+'-tags-rating" value="2"/>');
+			html.push('<label for="rating-input-'+count_tags+'-2" class="rating-star"></label>');
+			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-1" type="radio" name="'+count_tags+'-tags-rating" value="1"/>');
+			html.push('<label for="rating-input-'+count_tags+'-1" class="rating-star"></label>');
+			html.push('</span>');
+			html.push('<br>');
+			
+		}else{
+			html.push('<input type="hidden" name="'+count_tags+'-tags" value="'+item+'"></div>');
+		}
+		count_tags += 1;
+	});
+	html.push('<input type="hidden" name="count_whole_value" value="'+count_whole+'"></div>');
+	html.push('<input type="hidden" name="count_tags_value" value="'+count_tags+'"></div>');
+	html.push('<input type="hidden" name="id" value="'+id+'"></div>');
+	html.push('<input type="hidden" name="starttime" value="'+startTime+'"></div>');
+	html.push('<input type="hidden" name="endtime" value="'+endTime+'"></div>');
+	html.push('<br><input type="submit" value="Submit" style="position:absolute;left:40%;">');
+	html.push('</form>');
+	html.push('<br>');
+	html.push('<br>');
+	html.push('<br>');
+	$("#new_overlay").html(html.join(''));
 	$('#new_overlay').show();
-	}
+	$('#ratingsform').submit(function (e) {
+	e.preventDefault();
+	$.ajax({
+		type: 'post',
+		url: 'insert_rates.php',
+		data: $(this).serialize(),
+		success: function (data) {
+		$('#new_overlay').hide();
+		}
+	});
+	}) 
+}
+
 
 function watch_whole_confirm(id,startTime,endTime,watchWhole){
 
