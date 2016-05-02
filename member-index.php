@@ -3691,7 +3691,7 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
 			type: "POST",
 			url: "get_talks_by_tag.php",
 			async: false,
-			data: {tag: tags[i]},
+			data: {id: id, tag: tags[i]},
 			dataType: "json",
 			success: function(data){
 				if(data){

@@ -18,8 +18,9 @@
 		die("Unable to select database");
 	}
 	$tag = $_POST['tag'];
+	$id = $_POST['id'];
 	//Create query
-	$qry="SELECT * FROM bbc_programs WHERE bbc_id in (SELECT bbc_id from keywords WHERE keywords='$tag')";
+	$qry="SELECT * FROM bbc_programs WHERE bbc_id in (SELECT bbc_id from keywords WHERE keywords='$tag') and id != $id";
 	
 	$result=mysql_query($qry);  
 	//Check whether the query was successful or not
