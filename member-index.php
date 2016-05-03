@@ -35,6 +35,9 @@
 
   <link type="text/css" rel="stylesheet" href="css/new.css" />
 
+<!-- link IPIget component -->    
+<script language="JavaScript" type="text/javascript" src="/IPIget-master/component/client-side/TraceUser.js"></script>  
+<script type="text/javascript" language="javascript" src="/IPIget-master/component/client-side/AjaxRequest.js"></script>  
 
  </head>
 
@@ -49,6 +52,13 @@
 </div>
 
 <script type="text/javascript">
+
+        
+var userID = <?php echo $_SESSION['SESS_MEMBER_ID']; ?>;
+var objectID = 0;
+var pageID = "index";    
+var sessionID = "<?php echo session_id() ?>";    
+var pageType = "index";
 
 //the main buttons object
 var buttons = null;
@@ -222,7 +232,6 @@ function check_overflow(){
 }
 
 function init(){
-
 //detect ipads etc
    //console.log("platform "+navigator.platform);
    if(navigator.platform.indexOf("iPad") != -1 || navigator.platform.indexOf("Linux armv7l") != -1){
@@ -1253,7 +1262,7 @@ function insert_suggest_by_tag(tag) {
       type: "POST",
       url: "get_talks_by_tag.php",
       async: false,
-      data: {tag: tag},
+      data: {id: 0,tag: tag},
       dataType: "json",
       success: function(data){
 		if(data){
@@ -1643,7 +1652,10 @@ function show_browse_programmes(){
   $browse=$("#browse");
   $browse.removeClass("grey").addClass("blue");
 
-  $random=$("#random");
+  $random=$("#randomBBC");
+  $random.removeClass("blue").addClass("grey");
+  
+  $random=$("#randomTED");
   $random.removeClass("blue").addClass("grey");
   $container=$("#browser");
   $container.css("display","block");
@@ -3478,7 +3490,7 @@ function new_ted_random(){
 }
 
 function create_html(html,id,program_id,imgUrl,title,bbcorted){
-	var string = "<div id=\""+id+"\" pid=\""+id+"\" class=\"ui-widget-content button programme ui-draggable\" " ;
+	var string = "<div  id=\""+id+"\" pid=\""+id+"\" class=\"ui-widget-content button programme ui-draggable recomended object\" " ;
     string += " onclick= \"javascript:watch_video(";
     string += id+","+bbcorted+");return true\">";
 	html.push(string);
@@ -3573,7 +3585,7 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
 		var list_likes = list_likes_BBC;
 		var list_dislikes = list_dislikes_BBC;
 		}
-      html.push("<div id=\""+id+"\" pid=\""+pid+"\" href=\""+video+"\" class=\"ui-widget-content button programme ui-draggable\"" + "onclick=\"javascript:insert_suggest2("+pid+");return true\">");
+      html.push("<div id=\""+id+"\" pid=\""+pid+"\" href=\""+video+"\" class=\"ui-widget-content button programme ui-draggable recomended object\"" + "onclick=\"javascript:insert_suggest2("+pid+");return true\">");
       
       html.push("<img class=\"img img_small\" src=\""+img+"\" />");
       html.push("<div style='margin-top:-54px;'>");
@@ -3620,11 +3632,11 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
 
       html2 = [];
 
-      html2.push("<div class='close_button'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div>");
+      html2.push("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div>");
       html2.push("<div class='navigation_buttons'><img onclick='javascript:navigation(-1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='back' src='/images/icons/backward.png' width='30'/><img onclick='javascript:navigation(+1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='forward' src='/images/icons/forward.png' width='30'/></div>");
-      html2.push("<div id=\""+id+"\" pid=\""+pid+"\" href=\""+video+"\"  class=\"large_prog\" style=\"position: relative;\">");
+      html2.push("<div id=\"video_"+id+"\" pid=\""+pid+"\" href=\""+video+"\"  class=\"large_prog recomended object\" style=\"position: relative;\">");
       html2.push("<div class=\"gradient_div\" style=\"text-align: center;  margin-left: 45%; position: absolute; \"> <img class=\"img\" src=\""+img+"\" />");
-      html2.push("<div class=\"play_button\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
+      html2.push("<div id=\"play_"+id+"\" class=\"play_button recomended object\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
       html2.push("<div style='padding-left: 20px; padding-right: 20px; width: 50%; left: 0px; position: absolute;'>");
 	   if (bbcorted == 0){
       html2.push("<div style ='cursor: pointer;'class=\"p_title_large_speaker\" onclick=\"javascript:insert_speaker("+speaker_id+");return true\">"+speaker+':'+"</div>");
@@ -3634,7 +3646,7 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       html2.push("<div class=\"list_tags\" style='display:inline;'>");
       for(var i=0; i<tags.length; i++){
       
-          html2.push("<span class=\"item_tag\" onclick=\"javascript:insert_suggest_by_tag('"+tags[i]+"');return true\">#"+tags[i]+"</span>");
+          html2.push("<span id=\"tags_"+tags[i]+"\" class=\"item_tag recomended object\" onclick=\"javascript:insert_suggest_by_tag('"+tags[i]+"');return true\">#"+tags[i]+"</span>");
       
         
       }
@@ -3716,9 +3728,9 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
 
 function show_video(videoUrl,id,bbcorted,startTime,endTime){
 	if(bbcorted=="1"){
-	$("#new_overlay").html("<div class='close_button'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+endTime+");'/></div><div  id='player'><iframe id='myvid' width=\"854\" height=\"480\" src=\""+videoUrl+"?start="+startTime+"&end="+endTime+"&version=3\" frameborder=\"0\" allowfullscreen></iframe></div>");
+	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+endTime+");'/></div><div  id='player'><iframe id='myvid' width=\"854\" height=\"480\" src=\""+videoUrl+"?start="+startTime+"&end="+endTime+"&version=3\" frameborder=\"0\" allowfullscreen></iframe></div>");
 	}else{
-	$("#new_overlay").html("<div class='close_button'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div><div id='player'><video id='myvid' width='100%' controls=''><source src=\""+videoUrl+"\" type=\"video/mp4\"></video></div>");
+	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div><div id='player'><video id='myvid' width='100%' controls=''><source src=\""+videoUrl+"\" type=\"video/mp4\"></video></div>");
 	}
 }
 
@@ -3907,7 +3919,7 @@ function dislike(id,bbcorted,dislike){
    
 
     <div id="browser">
-      <div id="side-b" class="slidey">
+      <div id="side-b" class="slidey recomended object">
         <span class="sub_title">SUGGESTIONS FOR YOU</span> 
         <span class="more_blue" id="moreblue1"><a id="moreprogs" onclick='show_more_recommendations();'>View All &triangledown;</a></span>
         <div id="progs"> </div>
@@ -3916,7 +3928,7 @@ function dislike(id,bbcorted,dislike){
       <div class="clear"></div>
      
 
-      <div id="content" class="slidey">
+      <div id="content" class="slidey recomended object">
         <span class="sub_title">SHARED BY FRIENDS</span>
         <span class="more_blue" id="moreblue2"><a id='moreshared' onclick='show_shared();'>View All &triangledown;</a></span>
         <div id="results">
@@ -3927,7 +3939,7 @@ function dislike(id,bbcorted,dislike){
        <div class="clear"></div>
       <!-- <br clear="all" /> -->
 
-      <div id="content2" class="slidey">
+      <div id="content2" class="slidey recomended object">
         <span class="sub_title">RECENTLY VIEWED</span>
         <span  class="more_blue" id="moreblue3"><a id="morerecently" onclick='show_history();'>View All &triangledown;</a></span>
         <div id="history">
@@ -3938,7 +3950,7 @@ function dislike(id,bbcorted,dislike){
       <div class="clear"></div>
 
       
-      <div id="content3" class="slidey">
+      <div id="content3" class="slidey recomended object">
         <span class="sub_title">WATCH LATER</span>
         <span  class="more_blue" id="moreblue4"><a id="morelater" onclick='show_later();'>View All &triangledown;</a></span>
         <div id="list_later" >
@@ -3948,7 +3960,7 @@ function dislike(id,bbcorted,dislike){
       </div>
       <div class="clear"></div>
 
-      <div id="content4" class="slidey">
+      <div id="content4" class="slidey recomended object">
         <span class="sub_title">LIKES</span>
         <span  class="more_blue" id="moreblue5"><a id="morelikes" onclick='show_likes();'>View All &triangledown;</a></span>
         <div id="list_likes">
@@ -3958,7 +3970,7 @@ function dislike(id,bbcorted,dislike){
       </div>
       <div class="clear"></div>
 
-      <div id="content5" class="slidey">
+      <div id="content5" class="slidey recomended object">
         <span class="sub_title">DISLIKES</span>
         <span  class="more_blue" id="moreblue6"><a id="moredislikes" onclick='show_dislikes();'>View All &triangledown;</a></span>
         <div id="list_dislikes">
@@ -3992,7 +4004,7 @@ function dislike(id,bbcorted,dislike){
 <div id="footer">
 
 
-   <div id="browse" class="blue menu" style="position:absolute;left:500px"><a href="javascript:show_browse_programmes()">HOME</a></div>
+   <div id="browse" class="blue menu " style="position:absolute;left:500px"><a href="javascript:show_browse_programmes()">HOME</a></div>
    <div id="randomBBC" class="grey menu" style="position:absolute;left:600px;"><a href="javascript:new_bbc_random()">RANDOM BBC SELECTION</a></div>
    <div id="randomTED" class="grey menu" style="position:absolute;left:800px"><a href="javascript:new_ted_random()">RANDOM TED SELECTION</a></div>
 
