@@ -3,9 +3,9 @@
 //name of the target table
 //database connection needs to be defined
 $db_server ="localhost";
-$db_name = "root";
-$db_password = "";
-$db_database_name = "nscreen_members";
+$db_name = "nscreen";
+$db_password = "nscreen";
+$db_database_name = "nscreen_db";
 $tableName = "traceUser";
 $db_connection = mysql_connect($db_server, $db_name, $db_password) or die(mysql_error());
 $db_result = mysql_select_db($db_database_name, $db_connection) or die(mysql_error());
