@@ -63,7 +63,75 @@ UPDATE  `endDatetime`= \"".$_POST["endDatetime"]."\",
 
 mysql_query("SET character_set_client=UTF8");
 mysql_query($sql) ;
-
+$logfile = $_POST["logFile"];
+$member_id = $_POST["userID"];
+$logfile_lines = explode("\n",$logfile);
+foreach ($logfile_lines as $logfile_line) {
+	if (strpos($logfile_line, 'MouseClick') !== false) {
+		$oid = explode("oid=",$logfile_line)[1];
+		$oid = explode(";",$oid)[0];
+		if($oid != "null"){
+			if (is_numeric($oid)) {
+				$oid = intval($oid);
+				$qry="SELECT * FROM keywords WHERE bbc_id in (SELECT bbc_id from bbc_programs WHERE id = $oid)";
+				$result=mysql_query($qry); 
+				if($result) {
+					while ($row = mysql_fetch_assoc($result)) {
+						$keyword = $row['keywords'];
+						$relevance = $row['relevance'];
+						$check_tags = mysql_query("SELECT * FROM interest_area WHERE member_id=$member_id and tag='$keyword'");
+						if(mysql_num_rows($check_tags) == 0) {
+							$qry="insert into interest_area (member_id,tag,interest_value) values ($member_id,'$keyword',$relevance)";
+							mysql_query($qry); 
+				
+						} else {
+							$qry="update interest_area set interest_value = interest_value + $relevance WHERE member_id=$member_id and tag='$keyword'";
+							mysql_query($qry); 
+						
+						}
+					}
+					
+				}
+			}
+			elseif ( strpos($oid, 'tags') !== false ){
+				$oid = explode("tags_",$oid)[1];
+				$keyword = explode(";",$oid)[0];
+				$relevance = 7;
+				$check_tags = mysql_query("SELECT * FROM interest_area WHERE member_id=$member_id and tag='$keyword'");
+				if(mysql_num_rows($check_tags) == 0) {
+					$qry="insert into interest_area (member_id,tag,interest_value) values ($member_id,'$keyword',$relevance)";
+					$result=mysql_query($qry); 
+		
+				} else {
+					$qry="update interest_area set interest_value = interest_value + $relevance WHERE member_id=$member_id and tag='$keyword'";
+					$result=mysql_query($qry); 
+				}	
+			}
+			elseif ( strpos($oid, 'play') !== false ){
+				$oid = explode("play_",$oid)[1];
+				$oid = explode(";",$oid)[0];
+				$oid = intval($oid);
+				$qry="SELECT keywords,relevance FROM keywords WHERE bbc_id in (SELECT bbc_id from bbc_programs WHERE id = $oid)";
+				$result=mysql_query($qry); 
+				if($result) {
+					while ($row = mysql_fetch_assoc($result)) {
+						$keyword = $row['keywords'];
+						$relevance = $row['relevance']*3;
+						$check_tags = mysql_query("SELECT * FROM interest_area WHERE member_id=$member_id and tag='$keyword'");
+						if(mysql_num_rows($check_tags) == 0) {
+							$qry="insert into interest_area (member_id,tag,interest_value) values ($member_id,'$keyword',$relevance)";
+							$result=mysql_query($qry); 
+						} else {
+							$qry="update interest_area set interest_value = interest_value + $relevance WHERE member_id=$member_id and tag='$keyword'";
+							$result=mysql_query($qry); 
+						}
+					}
+				}
+			}
+		}
+	}
+}
+print_r($logfile_lines);
             print_r($_POST);
             echo $sql;
             echo mysql_error();
