@@ -1,14 +1,20 @@
 <?php
+require_once('config.php');
 
-//name of the target table
-//database connection needs to be defined
-$db_server ="localhost";
-$db_name = "nscreen";
-$db_password = "nscreen";
-$db_database_name = "nscreen_db";
+//Connect to mysql server
+$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+if(!$link) {
+	die('Failed to connect to server: ' . mysql_error());
+}
+	
+//Select database
+$db = mysql_select_db(DB_DATABASE);
+if(!$db) {
+	die("Unable to select database");
+}
+
 $tableName = "traceuser";
-$db_connection = mysql_connect($db_server, $db_name, $db_password) or die(mysql_error());
-$db_result = mysql_select_db($db_database_name, $db_connection) or die(mysql_error());
+
 
 
 
