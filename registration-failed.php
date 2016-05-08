@@ -69,7 +69,7 @@ function init(){
 
   var grp = window.location.hash;
   var state = {"canBeAnything": true};
-  history.pushState(state, "N-Screen", "http://localhost/N-Screen/");
+  history.pushState(state, "N-Screen", "http://localhost");
 
   if(grp){
      my_group = grp.substring(1);
@@ -101,7 +101,7 @@ function init(){
           }
       });
   })
-   history.pushState(state, "N-Screen", "http://localhost/N-Screen/");
+   history.pushState(state, "N-Screen", "http://localhost");
    clean_loc = String(window.location);
    window.location.hash=my_group;
    $("#group_name").html(my_group);

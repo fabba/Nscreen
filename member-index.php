@@ -491,29 +491,23 @@ for (var dat in data) {
 	$("#list_later").html(html.join(''));
 	$("#list_dislikes").html(html_dislikes.join(''));
 	$("#list_likes").html(html_likes.join(''));
-    //get some 'recommendations' --> this should be rendered by a recommendation algorithm 
-    $.ajax({
+	html = [];
+	 $.ajax({
       type: "POST",
-      url: "../get_channel.php",
+      url: "get_recommendations_bbc.php",
       async: false,
-      data: {channel: "recommendations"},
+      data: {},
       dataType: "json",
       success: function(data){
-        //console.log(data);
-        //var whatever = changeData(data);
-        recommendations_json = data; //set global variable to use later if so
-        console.log("THIS IS RECOMM")
-        console.log(recommendations_json);
-        recommendations(data,"progs");
-        // check_overflow(); 
-      },
-      error: function(jqXHR, textStatus, errorThrown){
-        console.log("!!nokkkk "+textStatus);
-      }
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
     });
+    $("#progs").html(html.join(''));
 
-    
-    recommendations(recommendations_json,"progs");
   
   }
   var state = {"canBeAnything": true};
@@ -3636,7 +3630,7 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       html2.push("<div class='navigation_buttons'><img onclick='javascript:navigation(-1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='back' src='/images/icons/backward.png' width='30'/><img onclick='javascript:navigation(+1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='forward' src='/images/icons/forward.png' width='30'/></div>");
       html2.push("<div id=\"video_"+id+"\" pid=\""+pid+"\" href=\""+video+"\"  class=\"large_prog recomended object\" style=\"position: relative;\">");
       html2.push("<div class=\"gradient_div\" style=\"text-align: center;  margin-left: 45%; position: absolute; \"> <img class=\"img\" src=\""+img+"\" />");
-      html2.push("<div id=\"play_"+id+"\" class=\"play_button recomended object\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
+      html2.push("<div id=\"play_"+id+"_"+start+"_"+end+"\" class=\"play_button recomended object\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
       html2.push("<div style='padding-left: 20px; padding-right: 20px; width: 50%; left: 0px; position: absolute;'>");
 	   if (bbcorted == 0){
       html2.push("<div style ='cursor: pointer;'class=\"p_title_large_speaker\" onclick=\"javascript:insert_speaker("+speaker_id+");return true\">"+speaker+':'+"</div>");

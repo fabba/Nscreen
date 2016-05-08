@@ -105,17 +105,20 @@ foreach ($logfile_lines as $logfile_line) {
 				$relevance = 7;
 				$check_tags = mysql_query("SELECT * FROM interest_area WHERE member_id=$member_id and tag='$keyword'");
 				if(mysql_num_rows($check_tags) == 0) {
-					$qry="insert into interest_area (member_id,tag,interest_value) values ($member_id,'$keyword',$relevance)";
+					$qry="insert into interest_area (member_id,tag,interest_value,watched) values ($member_id,'$keyword',$relevance,1)";
 					$result=mysql_query($qry); 
 		
 				} else {
-					$qry="update interest_area set interest_value = interest_value + $relevance WHERE member_id=$member_id and tag='$keyword'";
+					$qry="update interest_area set interest_value = interest_value + $relevance and watched = 1 WHERE member_id=$member_id and tag='$keyword'";
 					$result=mysql_query($qry); 
 				}	
 			}
 			elseif ( strpos($oid, 'play') !== false ){
-				$oid = explode("play_",$oid)[1];
-				$oid = explode(";",$oid)[0];
+				$oid = explode("play",$oid)[1];
+				$oid_start_end = explode("_",$oid);
+				$oid = $oid_start_end[1];
+				$start = $oid_start_end[2];
+				$end = explode(";",$oid_start_end[3])[0];
 				$oid = intval($oid);
 				$qry="SELECT keywords,relevance FROM keywords WHERE bbc_id in (SELECT bbc_id from bbc_programs WHERE id = $oid)";
 				$result=mysql_query($qry); 
@@ -133,6 +136,19 @@ foreach ($logfile_lines as $logfile_line) {
 						}
 					}
 				}
+				$qry="SELECT keyword FROM keyword_scenes WHERE bbc_id in (SELECT bbc_id from bbc_programs WHERE id = $oid) and start_scene = $start and end_scene = $end";
+				$result=mysql_query($qry); 
+				if($result) {
+					while ($row = mysql_fetch_assoc($result)) {
+						$keyword = $row['keyword'];
+						$check_tags = mysql_query("SELECT * FROM interest_area WHERE member_id=$member_id and tag='$keyword'");
+						if(mysql_num_rows($check_tags) != 0) {
+							$qry="update interest_area set watched = 1 WHERE member_id=$member_id and tag='$keyword'";
+							$result=mysql_query($qry); 
+						} 
+					}
+				}
+				
 			}
 		}
 	}
