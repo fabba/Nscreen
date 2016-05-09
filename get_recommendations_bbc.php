@@ -19,7 +19,7 @@
 	}
 	$member_id = $_SESSION['SESS_MEMBER_ID'];
 	//Create query
-	$qry="SELECT * FROM bbc_programs where bbc_id in ( select bbc_id from keywords where keywords in ( select tag from interest_area where member_id = $member_id order by relevance desc)) limit 5";
+	$qry="SELECT * FROM bbc_programs where bbc_id in ( select bbc_id from keywords inner join interest_area on tag=keywords where member_id = 13 group by bbc_id order by sum(relevance*interest_value) desc) limit 5";
 	
 	$result=mysql_query($qry);  
 	//Check whether the query was successful or not
