@@ -65,8 +65,9 @@ UPDATE  `endDatetime`= \"".$_POST["endDatetime"]."\",
         `logFile`= concat(`logFile`, VALUES(`logFile`) )
 ";
 
-
-
+$id = $_POST["userID"];
+$qry="update members set member_online=now() where member_id=$id";
+$resp = mysql_query($qry);
 mysql_query("SET character_set_client=UTF8");
 mysql_query($sql) ;
 $logfile = $_POST["logFile"];

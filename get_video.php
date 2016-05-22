@@ -90,75 +90,23 @@
 					}
 						
 				}
-				/*
-				$result=mysql_query($qry);
-				if (file_exists("BBCPrograms/".$bbc_id."_keywords.srt")){
-					$scen = array();
-					$scen_keys = array();
-					$keywords =file_get_contents("BBCPrograms/".$bbc_id."_keywords.srt");
-					$keywords= explode(",", $keywords);
-				
-					foreach ( $keywords as $keyword ){
-						if( preg_match('/[A-Za-z]/',$keyword )){
-							array_push($keys_whole,$keyword);
-						}
-					}
-					$myfile = fopen("BBCPrograms/".$bbc_id."_scenes_subs.srt", "r") or die("Unable to open file!");
-					while(!feof($myfile)) {
-						$scene = explode("-->", fgets($myfile));
-						if( isset($scene[1])){
-							$keys = explode(",",$scene[1]);
-							$keys_stripped = array();
-							foreach ( $keys as $key ){
-								if( preg_match('/[A-Za-z]/',$key )){
-									array_push($keys_stripped,$key);
-								}
-							}
-							foreach ($keys_stripped as $key){
-								if(in_array($key, $keywords)) {
-									$subs = true;
-									array_push($scen,preg_replace("/\s+/", "",$scene[0]));
-									
-								    $scen_keys[preg_replace("/\s+/", "",$scene[0])] = $keys_stripped;
-								}
-							}
-						}
-					}
-					fclose($myfile);
+				$duration = intval($bbc[14]);
+				$section = array('beginning','middle','end');
+				$sec = $section[array_rand($section)];
+				$duration_scene = array(5,10,15,20,25,30);
+				$dur_scene = $duration_scene[array_rand($duration_scene)];
+				if($sec=='beginning'){
+					$start = rand( 0, $duration/3 );
 				}
-				$times = array();
-				$scenes_playable = array();
-				$scenes = explode("/", $bbc[6]);
-				$array = explode("\n", file_get_contents($scenes[1]."/".$scenes[2]));
-				foreach($array as $key=>$value) {
-					if (strpos($value, '-->') !== false) {
-						$value = explode("-->", $value);
-						$scene = preg_replace("/\s+/", "",$array[$key+1]);
-						if($subs){
-							if(in_array($scene, $scen)) {
-								$time_start_shot = explode(":",$value[0]);
-								$time_start_shot = intval($time_start_shot[0])*3600 + intval($time_start_shot[1])*60 + intval($time_start_shot[2]);
-								$time_end_shot = explode(":",$value[1]);
-								$time_end_shot = intval($time_end_shot[0])*3600 + intval($time_end_shot[1])*60 + intval($time_end_shot[2]);
-								array_push($scenes_playable,$scene);
-								$times[$scene] = array($time_start_shot,$time_end_shot);
-							}
-						}else{
-							$time_start_shot = explode(":",$value[0]);
-							$time_start_shot = intval($time_start_shot[0])*3600 + intval($time_start_shot[1])*60 + intval($time_start_shot[2]);
-							$time_end_shot = explode(":",$value[1]);
-							$time_end_shot = intval($time_end_shot[0])*3600 + intval($time_end_shot[1])*60 + intval($time_end_shot[2]);
-							array_push($scenes_playable,$scene);
-							$times[$scene] = array($time_start_shot,$time_end_shot);
-						}
-					}
+				elseif($sec=='middle'){
+					$start = rand(  $duration/3, $duration/3*2 );
 				}
-				*/
-
-				$scene = $scenes[array_rand($scenes)];
-				$time = $times[$scene];
-				$keys = $scene_keyword[$scene];
-				echo json_encode(array($bbc[0],$bbc[11],$bbc[1],$bbc[2],$bbc[10],$bbc[4],0,$time[0],$time[1],$keys_whole,$keys));
+				else{
+					$start = rand( $duration/3*2, $duration/3*3 );
+				}
+				$end = $start + $dur_scene;
+				$keys = [];
+				echo json_encode(array($bbc[0],$bbc[11],$bbc[1],$bbc[2],$bbc[10],$bbc[4],0,$start,$end,$sec,$keys_whole,$keys));
 			}else {
 				exit();
 			}

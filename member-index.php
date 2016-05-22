@@ -153,6 +153,12 @@ $.fn.hasOverflow = function() {
 
 window.onresize = function(event) {
 
+    if ($("#programmes")[0].scrollHeight > $("#programmes").innerHeight()) {
+     $('#moreblue').show();
+   }
+   else{
+    $('#moreblue').hide();
+   }
    if ($("#side-b")[0].scrollHeight > $("#side-b").innerHeight()) {
      $('#moreblue1').show();
    }
@@ -193,6 +199,12 @@ window.onresize = function(event) {
 };
 
 function check_overflow(){
+ if ($("#programmes")[0].scrollHeight > $("#programmes").innerHeight()) {
+     $('#moreblue').show();
+   }
+   else{
+    $('#moreblue').hide();
+   }
    if ($("#side-b")[0].scrollHeight > $("#side-b").innerHeight()) {
      $('#moreblue1').show();
    }
@@ -305,8 +317,39 @@ function add_name(){
     var me = new Person(name,name);
     buttons.me = me;
     $(document).trigger('send_name');
-	
+	update_online_members();
+	setInterval(update_online_members, 60*1000);
 	html_likes = [];
+	 <?php
+	   require_once('config.php');
+	
+		//Connect to mysql server
+		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+		if(!$link) {
+			die('Failed to connect to server: ' . mysql_error());
+		}
+	
+		//Select database
+		$db = mysql_select_db(DB_DATABASE);
+		if(!$db) {
+			die("Unable to select database");
+		}
+		$member_id = $_SESSION['SESS_MEMBER_ID'];
+		$qry="SELECT gender,age FROM members where member_id=$member_id";
+		$result=mysql_query($qry);   
+		while ($row = mysql_fetch_array($result)){ ?>
+			var age = <?php echo $row[1]; ?>;
+		<?php
+		}
+		?>
+		if( age == 0){
+			$("#questions").show();
+			$("#inner").hide();
+		}
+		else{
+			$("#inner").show();
+			$("#questions").hide();
+			}
     $.ajax({
       type: "POST",
       url: "get_likes_bbc.php",
@@ -491,24 +534,71 @@ for (var dat in data) {
 	$("#list_later").html(html.join(''));
 	$("#list_dislikes").html(html_dislikes.join(''));
 	$("#list_likes").html(html_likes.join(''));
-	html = [];
-	 $.ajax({
-      type: "POST",
-      url: "get_recommendations_bbc.php",
-      async: false,
-      data: {},
-      dataType: "json",
-      success: function(data){
-		if(data){
-		for (var dat in data) {
-		dat = data[dat]
-		
-		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
-	}	  }
-    });
-    $("#progs").html(html.join(''));
-
-  
+	 var html = [];
+	    <?php
+	   require_once('config.php');
+	
+		//Connect to mysql server
+		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+		if(!$link) {
+			die('Failed to connect to server: ' . mysql_error());
+		}
+	
+		//Select database
+		$db = mysql_select_db(DB_DATABASE);
+		if(!$db) {
+			die("Unable to select database");
+		}
+		$qry="SELECT id,bbc_id,image_url,title FROM bbc_programs ORDER BY RAND() LIMIT 20";
+		$result=mysql_query($qry);   
+		while ($row = mysql_fetch_array($result)){ ?>
+			var id = <?php echo $row[0]; ?>;
+			var program_id = <?php echo $row[0]; ?>;
+	        var imgUrl = "<?php echo $row[2]; ?>";
+		    var title = "<?php echo str_replace('"',"",$row[3]); ?>";
+	        html = create_html(html,id,program_id,imgUrl,title,1);
+			<?php
+		}
+		?>
+	$("#programs").html(html.join(''));
+	   var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_format.php",
+			async: false,
+			data: {format: "Interview"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#results_format").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_genre.php",
+			async: false,
+			data: {genre: "Comedy"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				}
+				
+				}
+			}
+		});
+	
+	$("#results_genre").html(html.join(''));
   }
   var state = {"canBeAnything": true};
   //history.pushState(state, "N-Screen", "/N-Screen/");
@@ -518,6 +608,195 @@ for (var dat in data) {
 
 //creates and initialises the buttons object                              
 
+function get_symbols(){
+	list_watch_later_TED = [];
+	list_watch_later_BBC = [];
+	list_likes_TED = [];
+	list_likes_BBC = [];
+	list_dislikes_TED = [];
+	list_dislikes_BBC = [];
+   $.ajax({
+      type: "POST",
+      url: "get_likes_bbc.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		list_likes_BBC.push(dat['id']);
+		html_likes = create_html(html_likes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}
+		
+	  }
+    });
+	 $.ajax({
+      type: "POST",
+      url: "get_likes_ted.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		list_likes_TED.push(dat['id']);
+		html_likes = create_html(html_likes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	
+	html_dislikes =[]
+	 $.ajax({
+      type: "POST",
+      url: "get_dislikes_bbc.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_dislikes_BBC.push(dat['id']);
+		html_dislikes = create_html(html_dislikes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	 $.ajax({
+      type: "POST",
+      url: "get_dislikes_ted.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_dislikes_TED.push(dat['id']);
+		html_dislikes = create_html(html_dislikes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	
+	html =[]
+	 $.ajax({
+      type: "POST",
+      url: "get_later_bbc.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_watch_later_BBC.push(dat['id']);
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	 $.ajax({
+      type: "POST",
+      url: "get_later_ted.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_watch_later_TED.push(dat['id']);
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	html_likes = [];
+    $.ajax({
+      type: "POST",
+      url: "get_likes_bbc.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		list_likes_BBC.push(dat['id']);
+		html_likes = create_html(html_likes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}
+		
+	  }
+    });
+	 $.ajax({
+      type: "POST",
+      url: "get_likes_ted.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		list_likes_TED.push(dat['id']);
+		html_likes = create_html(html_likes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	
+	html_dislikes =[]
+	 $.ajax({
+      type: "POST",
+      url: "get_dislikes_bbc.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_dislikes_BBC.push(dat['id']);
+		html_dislikes = create_html(html_dislikes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	 $.ajax({
+      type: "POST",
+      url: "get_dislikes_ted.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_dislikes_TED.push(dat['id']);
+		html_dislikes = create_html(html_dislikes,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	
+	html =[]
+	 $.ajax({
+      type: "POST",
+      url: "get_later_bbc.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_watch_later_BBC.push(dat['id']);
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	 $.ajax({
+      type: "POST",
+      url: "get_later_ted.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		list_watch_later_TED.push(dat['id']);
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+}
 function create_buttons(){
    //$("#inner").addClass("inner_noscroll");
    // $(".slidey").addClass("slidey_noscroll");
@@ -1683,6 +1962,31 @@ function show_more_recommendations(){
   check_overflow();
 }
 
+function show_more_programmes(){
+
+  var content = $('#programmes');
+  //if expanded-->contract
+  if (content[0].style.height == '100%'){
+     //jquery bug animayion pertentage
+     // content.animate(content.height()*.100,400);
+      content.css('height','293px');
+     $('a#moreprogrammes').html('View All &triangledown;');
+     $('#lessprogrammes').remove();
+
+  }
+  else{
+    // content.animate({height:'100%'},400);
+    content.css('height','100%');
+    $('a#moreprogrammes').html('View Less &utri;');
+    content.append("<span id='lessprogrammes' class='more_blue'><a onclick='show_more_programmes();'>View Less &utri;</a></span>");
+
+  }
+  $(document).trigger('refresh');
+  $(document).trigger('refresh_buttons');
+  check_overflow();
+}
+
+
 function show_shared(){
 
   var content = $('#content');
@@ -1785,6 +2089,44 @@ function show_related(){
     content.css('height','100%');
     $('a#more_related').html('View Less ' + '&utri;');
     $('#new_overlay').append("<span id='lessrelated' class='more_blue'><a onclick='show_related();'>View Less &utri;</a></span>");
+    // content.append("<span id='lessrelated' class='more_blue'><a onclick='show_related();'>View Less &utri;</a></span>");
+  }
+  $(document).trigger('refresh');
+  $(document).trigger('refresh_buttons');
+  check_overflow();
+}
+
+function show_genre(){
+  var content = $('#spinner');
+  //if expanded-->contract
+  if (content[0].style.height == '100%'){
+    content.css('height','268px');
+    $('a#moregenre').html('View All &triangledown;');
+    $('#lessgenre').remove();
+  }
+  else{
+    content.css('height','100%');
+    $('a#moregenre').html('View Less ' + '&utri;');
+    $('#new_overlay').append("<span id='lessgenre' class='more_blue'><a onclick='show_genre();'>View Less &utri;</a></span>");
+    // content.append("<span id='lessrelated' class='more_blue'><a onclick='show_related();'>View Less &utri;</a></span>");
+  }
+  $(document).trigger('refresh');
+  $(document).trigger('refresh_buttons');
+  check_overflow();
+}
+
+function show_format(){
+  var content = $('#spinner');
+  //if expanded-->contract
+  if (content[0].style.height == '100%'){
+    content.css('height','268px');
+    $('a#moreformat').html('View All &triangledown;');
+    $('#lessformat').remove();
+  }
+  else{
+    content.css('height','100%');
+    $('a#moreformat').html('View Less ' + '&utri;');
+    $('#new_overlay').append("<span id='lessformat' class='more_blue'><a onclick='show_genre();'>View Less &utri;</a></span>");
     // content.append("<span id='lessrelated' class='more_blue'><a onclick='show_related();'>View Less &utri;</a></span>");
   }
   $(document).trigger('refresh');
@@ -3167,7 +3509,8 @@ $(document).bind('refresh', function () {
                                 var jid = el.attr('id');
                                 var el3 = ui.helper;
                                 var el2 = el3.parent();
-
+								alert(jid);
+								alert(el3);
                                 var a = get_object("a1");
                                 a.play();
 
@@ -3313,6 +3656,74 @@ $(document).bind('refresh', function () {
 
 // });
 
+function update_online_members() {
+	var html_online = [];
+	 $.ajax({
+      type: "POST",
+      url: "get_online_members.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		var id = dat['member_id'];
+		var firstname = dat['firstname'];
+		var lastname = dat['lastname'];
+		var facebookId = dat['facebook_id'];
+		if(facebookId == null){
+			html_online.push('<img id="member_'+id+'" src="images/user-default.png" alt="test" height="30" width="30" class="snaptarget">'+firstname+' '+lastname+'<br>');
+
+		}
+		else{
+			html_online.push('<img id="member_'+id+'" src="https://graph.facebook.com/'+facebookId+'/picture?type=large" alt="test" height="30" width="30" class="snaptarget">'+firstname+' '+lastname+'<br>');
+		}
+		}
+	}	  }
+    });
+    $('#roster_online').empty().append(html_online.join(''));
+	var html_offline = [];
+	 $.ajax({
+      type: "POST",
+      url: "get_offline_members.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		var id = dat['member_id'];
+		var firstname = dat['firstname'];
+		var lastname = dat['lastname'];
+		html_offline.push('<img id="member_'+id+'" src="images/user-default.png" alt="test" height="30" width="30" class="snaptarget">'+firstname+' '+lastname+'<br>');
+		}
+	}	  }
+    });
+	$('#roster_offline').empty().append(html_offline.join(''));
+   var html = [];
+    $.ajax({
+      type: "POST",
+      url: "get_shared_with_friend.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	 
+		if( html != ""){
+			$("#progs").html(html.join(''));}
+		else{
+			$("#progs").html("No programs shared with you yet");
+		}
+}
+		
 //annoying bloody audio stuff
 //http://codingrecipes.com/documentgetelementbyid-on-all-browsers-cross-browser-getelementbyid
 function get_object(id) {
@@ -3505,30 +3916,31 @@ function create_html(html,id,program_id,imgUrl,title,bbcorted){
       else{
         html.push("<img id='watch_random"+id+"' class=\"overlapicon\" src=\"/images/icons/on_watch_later.png\"/>");
       }
-            if(not_in_list(id,list_likes)){
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/like.png\" />");
+      if(not_in_list(id,list_likes)){
+		if(not_in_list(id,list_dislikes)){
+			html.push("<img name='like_name' class=\"like_name"+id+" overlapicon\" src=\"/images/icons/like.png\" />");
+		}
+		else{
+			html.push("<img name='like_name' class=\"like_name"+id+" overlapicon\" src=\"/images/icons/on_dislike.png\" />");
+		}
       }
       else{
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/on_like.png\" />");      
+		
+        html.push("<img name='like_name' class=\"like_name"+id+" overlapicon\" src=\"/images/icons/on_like.png\" />");      
       }
-      if(not_in_list(id,list_dislikes)){
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/dislike.png\" />");
-      }
-      else{
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/on_dislike.png\" />");      
-      }
+      //if(not_in_list(id,list_dislikes)){
+      //  html.push("<img class=\"overlapicon\" src=\"/images/icons/dislike.png\" />");
+      //}
+      //else{
+      //  html.push("<img class=\"overlapicon\" src=\"/images/icons/on_dislike.png\" />");      
+      //}
       if(not_in_list(id,list_recently_viewed)){
         html.push("<img class=\"overlapicon\" src=\"/images/icons/recently_viewed.png\" />");
       }
       else{
         html.push("<img class=\"overlapicon\" src=\"/images/icons/on_recently_viewed.png\" />");      
       }
-      if(not_in_list(id,list_shared_by_friends)){
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/shared.png\" />");
-      }
-      else{
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/on_shared.png\" />");      
-      }
+
     html.push("</div>");
     html.push("<span class=\"p_title p_title_small\"><a >"+title+"</a></span>");
 	html.push("</div>");
@@ -3545,7 +3957,7 @@ function watch_video(id,bbcorted) {
 			if(bbcorted == 0){
 				add_video (data['0'],data['1'],data['2'],data['4'],data['5'],data['6'],data['3'],0,0,[],[]);
 			}else{
-				add_video (data['0'],data['1'],data['2'],data['4'],data['5'],data['6'],data['3'],data['7'],data['8'],data['9'],data['10']);
+				add_video (data['0'],data['1'],data['2'],data['4'],data['5'],data['6'],data['3'],data['7'],data['8'],data['9'],data['10'],data['11']);
 			}
 		}
 		
@@ -3553,7 +3965,8 @@ function watch_video(id,bbcorted) {
 	 
 }
 
-function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,tags_video,scene_tags_video){
+function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,section,tags_video,scene_tags_video){
+	get_symbols();
 	  tags = tags_video;
 	  scene_tags = scene_tags_video;
       var div = $("#"+id);
@@ -3590,30 +4003,31 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       else{
         html.push("<img id=\"watch_random"+id+"\" class=\"overlapicon\" src=\"/images/icons/on_watch_later.png\"/>");
       }
-            if(not_in_list(id,list_likes)){
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/like.png\" />");
+           if(not_in_list(id,list_likes)){
+		if(not_in_list(id,list_dislikes)){
+			html.push("<img name='like_name' class=\"like_name"+id+" overlapicon\" src=\"/images/icons/like.png\" />");
+		}
+		else{
+			html.push("<img name='like_name' class=\"like_name"+id+" overlapicon\" src=\"/images/icons/on_dislike.png\" />");
+		}
       }
       else{
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/on_like.png\" />");      
+		
+        html.push("<img name='like_name' class=\"like_name"+id+" overlapicon\" src=\"/images/icons/on_like.png\" />");      
       }
-      if(not_in_list(id,list_dislikes)){
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/dislike.png\" />");
-      }
-      else{
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/on_dislike.png\" />");      
-      }
+     // if(not_in_list(id,list_dislikes)){
+      //  html.push("<img class=\"overlapicon\" src=\"/images/icons/dislike.png\" />");
+     // }
+     /// else{
+     //   html.push("<img class=\"overlapicon\" src=\"/images/icons/on_dislike.png\" />");      
+     // }
       if(not_in_list(id,list_recently_viewed)){
         html.push("<img class=\"overlapicon\" src=\"/images/icons/recently_viewed.png\" />");
       }
       else{
         html.push("<img class=\"overlapicon\" src=\"/images/icons/on_recently_viewed.png\" />");      
       }
-      if(not_in_list(id,list_shared_by_friends)){
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/shared.png\" />");
-      }
-      else{
-        html.push("<img class=\"overlapicon\" src=\"/images/icons/on_shared.png\" />");      
-      }
+ 
 
     html.push("</div>");
 
@@ -3626,11 +4040,10 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
 
       html2 = [];
 
-      html2.push("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div>");
-      html2.push("<div class='navigation_buttons'><img onclick='javascript:navigation(-1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='back' src='/images/icons/backward.png' width='30'/><img onclick='javascript:navigation(+1);' style='display: inline; margin: 0 5px; cursor:pointer;' title='forward' src='/images/icons/forward.png' width='30'/></div>");
+      html2.push("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/>Exit</div>");
       html2.push("<div id=\"video_"+id+"\" pid=\""+pid+"\" href=\""+video+"\"  class=\"large_prog recomended object\" style=\"position: relative;\">");
-      html2.push("<div class=\"gradient_div\" style=\"text-align: center;  margin-left: 45%; position: absolute; \"> <img class=\"img\" src=\""+img+"\" />");
-      html2.push("<div id=\"play_"+id+"_"+start+"_"+end+"\" class=\"play_button recomended object\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+");\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
+      html2.push("<div class=\"gradient_div\" style=\"text-align: center;  margin-left: 55%; position: absolute; \"> <img class=\"img\" src=\""+img+"\" />");
+      html2.push("<div id=\"play_"+id+"_"+start+"_"+end+"_"+section+"\" class=\"play_button recomended object\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+",'"+section+"');\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
       html2.push("<div style='padding-left: 20px; padding-right: 20px; width: 50%; left: 0px; position: absolute;'>");
 	   if (bbcorted == 0){
       html2.push("<div style ='cursor: pointer;'class=\"p_title_large_speaker\" onclick=\"javascript:insert_speaker("+speaker_id+");return true\">"+speaker+':'+"</div>");
@@ -3658,29 +4071,33 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       else{
               html2.push("<div id='watchlater'class=\"interactive_icon\"><img id='deletewatchlater' style='width: 40px;' onclick=\"javascript:watch_later("+id+","+bbcorted+",0);\"src=\"/images/icons/on_watch_later.png\" /><span style='display: block'; class ='on_inter_span'>Watch Later</span></div>");      
       }
-      if(not_in_list(id,list_likes)){
-        html2.push("<div id='like' class=\"interactive_icon\"><img id='addtolike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",1);\" src=\"/images/icons/like.png\" /><span style='display: block'; class ='inter_span'>Like</span></div>");
+	  if(not_in_list(id,list_likes)){
+		if(not_in_list(id,list_dislikes)){
+			html2.push("<div id='like' class=\"interactive_icon\"><img id='normal' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",1);\" src=\"/images/icons/like.png\" /><span style='display: block'; class ='inter_span'></span></div>");
+
+		}
+		else{
+			html2.push("<div id='like' class=\"interactive_icon\"><img id = 'deletedislike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",0);\"src=\"/images/icons/on_dislike.png\" /><span style='display: block'; class ='on_inter_span'></span></div>");
+
+		}
       }
       else{
-        html2.push("<div id='like' class=\"interactive_icon\"><img id='deletelike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",0);\" src=\"/images/icons/on_like.png\" /><span style='display: block'; class ='on_inter_span'>Like</span></div>");
+		
+            html2.push("<div id='like' class=\"interactive_icon\"><img id='like' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",1);\" src=\"/images/icons/on_like.png\" /><span style='display: block'; class ='on_inter_span'></span></div>");
+   
       }
-      if(not_in_list(id,list_dislikes)){
-      html2.push("<div id='dislike' class=\"interactive_icon\"><img id = 'addtodislike' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",1);\"src=\"/images/icons/dislike.png\" /><span style='display: block'; class ='inter_span'>Dislike</span></div>");
-      }
-      else{
-      html2.push("<div id='dislike' class=\"interactive_icon\"><img id = 'deletedislike' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",0);\"src=\"/images/icons/on_dislike.png\" /><span style='display: block'; class ='on_inter_span'>Dislike</span></div>");
-      }
-      if(not_in_list(id,list_shared_by_friends)){
-        html2.push("<div class=\"interactive_icon\"><img style='width: 40px;' src=\"/images/icons/shared.png\" /><span style='display: block'; class ='inter_span'>Shared by friends</span></div>");
-      }
-      else{
-        html2.push("<div class=\"interactive_icon\"><img style='width: 40px;' src=\"/images/icons/on_shared.png\" /><span style='display: block'; class ='on_inter_span'>Shared by friends</span></div>");
-      }
+   
+      //if(not_in_list(id,list_dislikes)){
+     // html2.push("<div id='dislike' class=\"interactive_icon\"><img id = 'addtodislike' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",1);\"src=\"/images/icons/dislike.png\" /><span style='display: block'; class ='inter_span'>Dislike</span></div>");
+     // }
+      //else{
+      //html2.push("<div id='dislike' class=\"interactive_icon\"><img id = 'deletedislike' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",0);\"src=\"/images/icons/on_dislike.png\" /><span style='display: block'; class ='on_inter_span'>Dislike</span></div>");
+     // }
       if(flag == false){
-        html2.push("<div class=\"interactive_icon\"><img style='width: 40px;' src=\"/images/icons/recently_viewed.png\" /><span style='display: block'; class ='inter_span'>Recenlty Viewed</span></div></div>");
+        html2.push("<div class=\"interactive_icon\"><img style='width: 40px;' src=\"/images/icons/recently_viewed.png\" /><span style='display: block'; class ='inter_span'>Watched</span></div></div>");
       }
       else{
-        html2.push("<div class=\"interactive_icon\"><img style='width: 40px;' src=\"/images/icons/on_recently_viewed.png\" /><span style='display: block'; class ='on_inter_span'>Recenlty Viewed</span></div></div>");
+        html2.push("<div class=\"interactive_icon\"><img style='width: 40px;' src=\"/images/icons/on_recently_viewed.png\" /><span style='display: block'; class ='on_inter_span'>Watched</span></div></div>");
       }
       html2.push("</div>");
       html2.push("</div>");
@@ -3720,87 +4137,88 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,ta
       
 }
 
-function show_video(videoUrl,id,bbcorted,startTime,endTime){
+function show_video(videoUrl,id,bbcorted,startTime,end,section){
 	if(bbcorted=="1"){
-	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+endTime+");'/></div><div  id='player'><iframe id='myvid' width=\"854\" height=\"480\" src=\""+videoUrl+"?start="+startTime+"&end="+endTime+"&version=3\" frameborder=\"0\" allowfullscreen></iframe></div>");
+	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+end+",\""+section+"\");'/>Exit</div><div  id='player'><iframe id='myvid' width=\"854\" height=\"480\" src=\""+videoUrl+"?start="+startTime+"&end="+end+"&version=3\" frameborder=\"0\" allowfullscreen></iframe></div>");
 	}else{
-	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div><div id='player'><video id='myvid' width='100%' controls=''><source src=\""+videoUrl+"\" type=\"video/mp4\"></video></div>");
+	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/>Exit</div><div id='player'><video id='myvid' width='100%' controls=''><source src=\""+videoUrl+"\" type=\"video/mp4\"></video></div>");
 	}
 }
 
-function watch_whole(id,startTime,endTime){
+function watch_whole(id,startTime,endTime,section){
+	var duration = endTime - startTime;
 	html = [];
 	count_whole = 0;
 	count_tags = 0;
 	html.push('<form id="ratingsform" action="insert_rates.php" method="post">');
-	html.push("<div id='confirm' style='position:absolute;left:20%;'>After seeing this scene are you interested in watching the whole video?</div>");
-	html.push('<br><span name="confirm" style="position:absolute;left:40%;">');
-	html.push('No<input class="star" type="radio" name="rating" value="0"/>');
-	html.push('Yes:<input class="star" type="radio" name="rating" value="1"/>');
+	html.push("<div id='confirm' style='position:absolute;left:10%;'>Would you like to watch the full programme?</div>");
+	html.push('<br><span name="confirm" style="position:absolute;left:20%;">');
+	html.push('No:<input class="star" type="radio" name="rating" value="0" onClick="not_interesting()"/>');
+	html.push('Yes:<input class="star" type="radio" name="rating" value="1" onClick="interesting()"/>');
 	html.push('</span>');
-	html.push("<br><br><div style='position:absolute;left:20%;'>Please rate the subjects below from not interesting to very intersting</div><br><br>");
-	tags.forEach( function insert_tags(item) { 
-		html.push('<input type="hidden" name="'+count_whole+'" value="'+item+'"></div>');
-		html.push('<div class="'+count_whole+'" name="'+count_whole+'" style="position:absolute;left:20%;" value="'+item+'">'+item);
-		html.push('</div>');
-		html.push('<span name="'+item+'-tagsrate"  class="rating" style="position:absolute;left:40%;overflow: hidden;display: inline-block;">');
-		html.push('<input class="rating-input" id="rating-'+count_whole+'-5" type="radio" name="'+count_whole+'-rating" value="5"/>');
-		html.push('<label for="rating-'+count_whole+'-5" class="rating-star"></label>');
-		html.push('<input class="rating-input" id="rating-'+count_whole+'-4" type="radio" name="'+count_whole+'-rating" value="4"/>');
-		html.push('<label for="rating-'+count_whole+'-4" class="rating-star"></label>');
-		html.push('<input class="rating-input" id="rating-'+count_whole+'-3" type="radio" name="'+count_whole+'-rating" value="3"/>');
-		html.push('<label for="rating-'+count_whole+'-3" class="rating-star"></label>');
-		html.push('<input class="rating-input" id="rating-'+count_whole+'-2" type="radio" name="'+count_whole+'-rating" value="2"/>');
-		html.push('<label for="rating-'+count_whole+'-2" class="rating-star"></label>');
-		html.push('<input class="rating-input" id="rating-'+count_whole+'-1" type="radio" name="'+count_whole+'-rating" value="1"/>');
-		html.push('<label for="rating-'+count_whole+'-1" class="rating-star"></label>');
-		html.push('</span>');		
-		html.push('<br>');
-		count_whole += 1;
-	});
-	scene_tags.forEach(function insert_tags(item) {
-		if(tags.indexOf(item) == -1){
-			html.push('<input type="hidden" name="'+count_tags+'-tags" value="'+item+'"></div>');
-			html.push('<div name="'+item+'-tags" style="position:absolute;left:20%;" value="'+item+'">'+item);
-			html.push('</div>');
-			html.push('<span name="'+item+'-tagsrate"  class="rating" style="position:absolute;left:40%;overflow: hidden;display: inline-block;">');
-			
-			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-5" type="radio" name="'+count_tags+'-tags-rating" value="5"/>');
-			html.push('<label for="rating-input-'+count_tags+'-5" class="rating-star"></label>');
-			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-4" type="radio" name="'+count_tags+'-tags-rating" value="4"/>');
-			html.push('<label for="rating-input-'+count_tags+'-4" class="rating-star"></label>');
-			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-3" type="radio" name="'+count_tags+'-tags-rating" value="3"/>');
-			html.push('<label for="rating-input-'+count_tags+'-3" class="rating-star"></label>');
-			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-2" type="radio" name="'+count_tags+'-tags-rating" value="2"/>');
-			html.push('<label for="rating-input-'+count_tags+'-2" class="rating-star"></label>');
-			html.push('<input class="rating-input" id="rating-input-'+count_tags+'-1" type="radio" name="'+count_tags+'-tags-rating" value="1"/>');
-			html.push('<label for="rating-input-'+count_tags+'-1" class="rating-star"></label>');
-			html.push('</span>');
-			html.push('<br>');
-			
-		}else{
-			html.push('<input type="hidden" name="'+count_tags+'-tags" value="'+item+'"></div>');
-		}
-		count_tags += 1;
-	});
-	html.push('<input type="hidden" name="count_whole_value" value="'+count_whole+'"></div>');
-	html.push('<input type="hidden" name="count_tags_value" value="'+count_tags+'"></div>');
-	html.push('<input type="hidden" name="id" value="'+id+'"></div>');
-	html.push('<input type="hidden" name="starttime" value="'+startTime+'"></div>');
-	html.push('<input type="hidden" name="endtime" value="'+endTime+'"></div>');
-	html.push('<br><input type="submit" value="Submit" style="position:absolute;left:40%;">');
+	html.push("<br><br><div id='interesting' style='position:absolute;left:10%;'><span id='interesting_title'> Please fill in the following questions about your opinion of the extract:</span>");
+	html.push("<br>");
+html.push("<br>");
+	html.push('<table style="width:100%">');
+    html.push('<tr>');
+    html.push('<td  style="padding:0 15px 0 15px;width:40%;">       </td>');
+    html.push('<td style="padding:0 15px 0 15px;">  Completely disagree </td> ');
+    html.push('<td style="padding:0 15px 0 15px;"> Disagree </td>');
+	html.push('<td style="padding:0 15px 0 15px;"> Neutral </td>');
+    html.push('<td style="padding:0 15px 0 15px;"> Agree </td> ');
+    html.push('<td style="padding:0 15px 0 15px;"> Completely agree </td>');
+    html.push('</tr>');
+    html.push('<tr>');
+    html.push(' <td style="padding:0 15px 0 15px;"> The extract long enough to decide whether to watch the whole TV programme</td>');
+    html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="long-enough" value="0"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="long-enough" value="1"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="long-enough" value="2"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="long-enough" value="3"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="long-enough" value="4"/></td> ');
+    html.push('</tr>')
+	 html.push('<tr>');
+    html.push(' <td style="padding:0 15px 0 15px;"> The extract too short to decide whether to watch the whole TV programme</td>');
+    html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-short" value="0"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-short" value="1"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-short" value="2"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-short" value="3"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-short" value="4"/></td> ');
+    html.push('</tr>')
+	 html.push('<tr>');
+    html.push(' <td style="padding:0 15px 0 15px;"> The length of the extract was too long </td>');
+    html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-long" value="0"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-long" value="1"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-long" value="2"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-long" value="3"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="too-long" value="4"/></td> ');
+    html.push('</tr>')
+	 html.push('<tr>');
+    html.push(' <td style="padding:0 15px 0 15px;"> The extract did contain spoilers</td>');
+    html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="spoilers" value="0"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="spoilers" value="1"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="spoilers" value="2"/></td> ');
+    html.push(' <td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="spoilers" value="3"/></td>');
+	html.push('<td style="padding:0 15px 0 15px;"><input class="genre-star" type="radio" name="spoilers" value="4"/></td> ');
+    html.push('</tr>')
+    html.push('</table>');
+	html.push('<br>');
+	html.push('<input type="hidden" name="id" value="'+id+'" />');
+	html.push('<input type="hidden" name="start" value="'+startTime+'" />');
+	html.push('<input type="hidden" name="duration" value="'+duration+'" />');
+	html.push('<input type="hidden" name="section" value="'+section+'" />');
+	html.push('<input type="submit" value="Submit" style="position:absolute;left:40%;">');
+	html.push('</div><br><br>');		
 	html.push('</form>');
-	html.push('<br>');
-	html.push('<br>');
-	html.push('<br>');
+
 	$("#new_overlay").html(html.join(''));
 	$('#new_overlay').show();
 	$('#ratingsform').submit(function (e) {
 	e.preventDefault();
+	var data = $(this).serializeArray();
 	$.ajax({
 		type: 'post',
 		url: 'insert_rates.php',
-		data: $(this).serialize(),
+		data: data,
 		success: function (data) {
 		$('#new_overlay').hide();
 		}
@@ -3847,11 +4265,11 @@ function like(id,bbcorted,liked){
 			dataType: "json",
 			success: function (data) {	
 				  if( liked == 0){
-					$("#like").html("<img id = 'addtolike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",1);\"src=\"/images/icons/like.png\" /><span style='display: block'; class ='inter_span'>Like</span>");
-				    $("#watch_random"+id).attr("src","/images/icons/watch_later.png");
+					$("#like").html("<img id = 'llike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",1);\"src=\"/images/icons/like.png\" /><span style='display: block'; class ='inter_span'></span>");
+				    $(".like_name"+id).attr('src', '/images/icons/like.png');
 				  }else{
-  					$("#like").html("<img id='deletelike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",0);\" src=\"/images/icons/on_like.png\" /><span style='display: block'; class ='on_inter_span'>Like</span>");
-					$("#watch_random"+id).attr("src","/images/icons/on_watch_later.png");
+  					$("#like").html("<img id='middle' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",1);\" src=\"/images/icons/on_like.png\" /><span style='display: block'; class ='on_inter_span'></span>");
+					$(".like_name"+id).attr('src', '/images/icons/on_like.png');
 				  }					
 			}
 	  });
@@ -3864,15 +4282,81 @@ function dislike(id,bbcorted,dislike){
 			data:{id: id, bbcorted: bbcorted, dislike: dislike, url: document.URL},                                                                   
 			dataType: "json",
 			success: function (data) {	
-				  if( dislike == 0){
-					$("#dislike").html("<img id = 'addtodislike' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",1);\"src=\"/images/icons/dislike.png\" /><span style='display: block'; class ='inter_span'>Dislike</span>");
-				    $("#watch_random"+id).attr("src","/images/icons/watch_later.png");
-				  }else{
-  					$("#dislike").html("<img id = 'deletedislike' style='width: 40px;' onclick=\"javascript:dislike("+id+","+bbcorted+",0);\"src=\"/images/icons/on_dislike.png\" /><span style='display: block'; class ='on_inter_span'>Dislike</span>");
-					$("#watch_random"+id).attr("src","/images/icons/on_watch_later.png");
-				  }					
+				  if( dislike == 1){
+					$("#like").html("<img id = 'ldislike' style='width: 40px;' onclick=\"javascript:like("+id+","+bbcorted+",0);\"src=\"/images/icons/on_dislike.png\" /><span style='display: block'; class ='inter_span'></span>");
+				    $(".like_name"+id).attr('src', '/images/icons/on_dislike.png');
+				  }				
 			}
 	  });
+}
+
+function get_genre(genre){
+	  var replace_content=true;
+	  genre = genre.value;
+	  var ele = "results_genre";
+	   var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_genre.php",
+			async: false,
+			data: {genre: genre},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+				}
+		}
+		});
+	
+   	if(replace_content){
+	  $("#"+ele).html(html.join(''));
+	}else{
+	  $("#"+ele).append("<div id=\"more\">"+html.join('')+"</div>");
+	}
+	
+	$("#"+ele).append('');
+   $(document).trigger('refresh');
+   $(document).trigger('refresh_buttons');
+
+	
+}
+
+function get_format(format){
+	  format = format.value;
+	  var replace_content=true;
+	  var ele = "results_format";
+	   var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_format.php",
+			async: false,
+			data: {format: format},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				}
+			}
+		}
+		});
+	
+   	if(replace_content){
+	  $("#"+ele).html(html.join(''));
+	}else{
+	  $("#"+ele).append("<div id=\"more\">"+html.join('')+"</div>");
+	}
+	
+	$("#"+ele).append('');
+   $(document).trigger('refresh');
+   $(document).trigger('refresh_buttons');
+
+	
 }
 </script>
 
@@ -3895,7 +4379,7 @@ function dislike(id,bbcorted,dislike){
         <input type="text" id="search_text" name="search_text" value="search programmes" onclick="javascript:remove_search_text();return false;"/>
       </form>
     </span> -->
-    <!-- <div style="top:10px;right:10px;position:absolute;">Logged in as: <%= @user.firstname %> <%= @user.lastname %></div> -->
+    <div style="top:10px;right:10px;position:absolute;">Logged in as: <?php echo $_SESSION['SESS_FIRST_NAME']; ?> <?php echo $_SESSION['SESS_LAST_NAME']; ?></div> 
 
   </div>
 
@@ -3908,24 +4392,718 @@ function dislike(id,bbcorted,dislike){
 
 <div id="container">
 
+	<div id="questions"style="display: none;">
+	<form class="form-horizontal" role="form" method="post" action="insert_personal_inf.php">');
+		<br><br><br>
+		<h3>Before using the application please fill in the following questions:</h3> 
+		<h4 for="control">1. What is your gender?</h4>
+		<div class="radio" >
+			<label class="radio"><input type="radio" value="Male" name="gender">Male</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" value="Female" name="gender">Female</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" value="Other" name="gender">Other</label>
+		</div>
+		<h4>2. What is your age?</h4>
+		<select id="age" name= "age" class="form-control">
+			<option>Under 18</option>
+			<option>18</option>
+			<option>19</option>
+			<option>20</option>
+			<option>21</option>
+			<option>22</option>
+			<option>23</option>
+			<option>24</option>
+			<option>25</option>
+			<option>26</option>
+			<option>27</option>
+			<option>28</option>
+			<option>29</option>
+			<option>30</option>
+			<option>Above 30</option>
+		</select>
+		<h4>3. What is you level of education?</h4>
+		<div class="radio" >
+			<label class="radio"><input type="radio" id="education" value="None" name="education"/>No schooling completed</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" id="education" value="HighSchoolGraduate" name="education"/>High school graduate</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" id="education" value="SomeCollege" name="education"/>Some college credit, no degree</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" id="education" value="BachelorDegree" name="education"/>Bachelors degree</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" id="education" value="MasterDegree" name="education"/>Masters degree</label>
+		</div>
+		<div class="radio" >
+			<label class="radio"><input type="radio" id="education" value="AdvancedGraduate" name="education"/>Advanced graduate work or Ph.D.</label>
+		</div>
+		<h4>4. What country were you born in?</h4>
+				<select id="country" name= "country" class="form-control">
+					<option></option>
+					<option>Afghanistan</option>
+					<option>Albania</option>
+					<option>Algeria</option>
+					<option>Andorra</option>
+					<option>Angola</option>
+					<option>Antigua & Deps</option>
+					<option>Argentina</option>
+					<option>Armenia</option>
+					<option>Australia</option>
+					<option>Austria</option>
+					<option>Azerbaijan</option>
+					<option>Bahamas</option>
+					<option>Bahrain</option>
+					<option>Bangladesh</option>
+					<option>Barbados</option>
+					<option>Belarus</option>
+					<option>Belgium</option>
+					<option>Belize</option>
+					<option>Benin</option>
+					<option>Bhutan</option>
+					<option>Bolivia</option>
+					<option>Bosnia Herzegovina</option>
+					<option>Botswana</option>
+					<option>Brazil</option>
+					<option>Brunei</option>
+					<option>Bulgaria</option>
+					<option>Burkina</option>
+					<option>Burundi</option>
+					<option>Cambodia</option>
+					<option>Cameroon</option>
+					<option>Canada</option>
+					<option>Cape Verde</option>
+					<option>Central African Rep</option>
+					<option>Chad</option>
+					<option>Chile</option>
+					<option>China</option>
+					<option>Colombia</option>
+					<option>Comoros</option>
+					<option>Congo</option>
+					<option>Congo {Democratic Rep}</option>
+					<option>Costa Rica</option>
+					<option>Croatia</option>
+					<option>Cuba</option>
+					<option>Cyprus</option>
+					<option>Czech Republic</option>
+					<option>Denmark</option>
+					<option>Djibouti</option>
+					<option>Dominica</option>
+					<option>Dominican Republic</option>
+					<option>East Timor</option>
+					<option>Ecuador</option>
+					<option>Egypt</option>
+					<option>El Salvador</option>
+					<option>Equatorial Guinea</option>
+					<option>Eritrea</option>
+					<option>Estonia</option>
+					<option>Ethiopia</option>
+					<option>Fiji</option>
+					<option>Finland</option>
+					<option>France</option>
+					<option>Gabon</option>
+					<option>Gambia</option>
+					<option>Georgia</option>
+					<option>Germany</option>
+					<option>Ghana</option>
+					<option>Greece</option>
+					<option>Grenada</option>
+					<option>Guatemala</option>
+					<option>Guinea</option>
+					<option>Guinea-Bissau</option>
+					<option>Guyana</option>
+					<option>Haiti</option>
+					<option>Honduras</option>
+					<option>Hungary</option>
+					<option>Iceland</option>
+					<option>India</option>
+					<option>Indonesia</option>
+					<option>Iran</option>
+					<option>Iraq</option>
+					<option>Ireland {Republic}</option>
+					<option>Israel</option>
+					<option>Italy</option>
+					<option>Ivory Coast</option>
+					<option>Jamaica</option>
+					<option>Japan</option>
+					<option>Jordan</option>
+					<option>Kazakhstan</option>
+					<option>Kenya</option>
+					<option>Kiribati</option>
+					<option>Korea North</option>
+					<option>Korea South</option>
+					<option>Kosovo</option>
+					<option>Kuwait</option>
+					<option>Kyrgyzstan</option>
+					<option>Laos</option>
+					<option>Latvia</option>
+					<option>Lebanon</option>
+					<option>Lesotho</option>
+					<option>Liberia</option>
+					<option>Libya</option>
+					<option>Liechtenstein</option>
+					<option>Lithuania</option>
+					<option>Luxembourg</option>
+					<option>Macedonia</option>
+					<option>Madagascar</option>
+					<option>Malawi</option>
+					<option>Malaysia</option>
+					<option>Maldives</option>
+					<option>Mali</option>
+					<option>Malta</option>
+					<option>Marshall Islands</option>
+					<option>Mauritania</option>
+					<option>Mauritius</option>
+					<option>Mexico</option>
+					<option>Micronesia</option>
+					<option>Moldova</option>
+					<option>Monaco</option>
+					<option>Mongolia</option>
+					<option>Montenegro</option>
+					<option>Morocco</option>
+					<option>Mozambique</option>
+					<option>Myanmar, {Burma}</option>
+					<option>Namibia</option>
+					<option>Nauru</option>
+					<option>Nepal</option>
+					<option>Netherlands</option>
+					<option>New Zealand</option>
+					<option>Nicaragua</option>
+					<option>Niger</option>
+					<option>Nigeria</option>
+					<option>Norway</option>
+					<option>Oman</option>
+					<option>Pakistan</option>
+					<option>Palau</option>
+					<option>Panama</option>
+					<option>Papua New Guinea</option>
+					<option>Paraguay</option>
+					<option>Peru</option>
+					<option>Philippines</option>
+					<option>Poland</option>
+					<option>Portugal</option>
+					<option>Qatar</option>
+					<option>Romania</option>
+					<option>Russian Federation</option>
+					<option>Rwanda</option>
+					<option>St Kitts & Nevis</option>
+					<option>St Lucia</option>
+					<option>Saint Vincent & the Grenadines</option>
+					<option>Samoa</option>
+					<option>San Marino</option>
+					<option>Sao Tome & Principe</option>
+					<option>Saudi Arabia</option>
+					<option>Senegal</option>
+					<option>Serbia</option>
+					<option>Seychelles</option>
+					<option>Sierra Leone</option>
+					<option>Singapore</option>
+					<option>Slovakia</option>
+					<option>Slovenia</option>
+					<option>Solomon Islands</option>
+					<option>Somalia</option>
+					<option>South Africa</option>
+					<option>South Sudan</option>
+					<option>Spain</option>
+					<option>Sri Lanka</option>
+					<option>Sudan</option>
+					<option>Suriname</option>
+					<option>Swaziland</option>
+					<option>Sweden</option>
+					<option>Switzerland</option>
+					<option>Syria</option>
+					<option>Taiwan</option>
+					<option>Tajikistan</option>
+					<option>Tanzania</option>
+					<option>Thailand</option>
+					<option>Togo</option>
+					<option>Tonga</option>
+					<option>Trinidad & Tobago</option>
+					<option>Tunisia</option>
+					<option>Turkey</option>
+					<option>Turkmenistan</option>
+					<option>Tuvalu</option>
+					<option>Uganda</option>
+					<option>Ukraine</option>
+					<option>United Arab Emirates</option>
+					<option>United Kingdom</option>
+					<option>United States</option>
+					<option>Uruguay</option>
+					<option>Uzbekistan</option>
+					<option>Vanuatu</option>
+					<option>Vatican City</option>
+					<option>Venezuela</option>
+					<option>Vietnam</option>
+					<option>Yemen</option>
+					<option>Zambia</option>
+					<option>Zimbabwe</option>
+				</select>
+		<h4>5. What are your favourite TV genre(s)?</h4>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Comedy" name="genre[]" id="genre">Comedy</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Drama" name="genre[]" id="genre">Drama</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Entertainment" name="genre[]" id="genre">Entertainment</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Factual" name="genre[]" id="genre">Factual</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Music" name="genre[]" id="genre">Music</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Religion" name="genre[]" id="genre">Religion &amp; Ethics</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Sport" name="genre[]" id="genre">Sport</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Other" name="genre[]" onclick="var input = document.getElementById('genreOther'); if(this.checked){ input.disabled = false; input.focus();}else{input.disabled=true;}">Other:  <input class="form-control" id="genreOther" name="genreOther" disabled="disabled"/></label></div>
 
-  <div id="inner">
+		<br>
+		<h4>6. What are your favourite TV programme format(s)?</h4>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]" value="Animation" id="format">Animation</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Discussion_talk" id="format">Discussion &amp; Talk</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Documentaries" id="format">Documentaries</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Films" id="format">Films</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Games_Quizzes" id="format">Games &amp; Quizzes</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="News" id="format">News &amp; Bullettins</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Reality" id="format">Reality</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="PerformanceEvent" id="format">Performance &amp; Event</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="magazinesandreviews" id="format">Magazines &amp; Reviews</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="talentshows" id="format">Talent shows</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]" value="Other" onclick="var input = document.getElementById('formatOther'); if(this.checked){ input.disabled = false; input.focus();}else{input.disabled=true;}">Other:  <input class="form-control" id="formatOther" name="formatOther" disabled="disabled"/></label></div>
+		<h4>7. How much time do you typically spend watching TV daily?</h4>
+		<h6 style="color:red;">(Including your regular TV, Phone, Tablet and online services.)</h6>
+		<table class="table" style="width:50%">
+			<thead>
+				<tr>
+					<th width="10%"></th>
+					<th width="15%" text-align="center"><h5>Never</h5></th>
+					<th width="15%" text-align="center"><h5>Occasionally</h5></th>
+					<th width="15%" text-align="center"><h5>Less than<br>1 hour</h5></th>
+					<th width="15%" text-align="center"><h5>1 - 2<br>hours</h5></th>
+					<th width="15%" text-align="center"><h5>2 - 4<br>hours</h5></th>
+					<th width="15%" text-align="center"><h5>More than<br>4 hours</h5></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+			  <td ><h5>Morning</h5></td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="morning" value="Morning-Never"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="morning" value="Morning-Occasionally"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="morning" value="Morning-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="morning" value="Morning-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="morning" value="Morning-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="morning" value="Morning-4h"></label>
+				 </div>
+			   </td>
+			</tr>
+				<tr>
+			  <td ><h5>Afternoon</h5></td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-Never"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-Occasionally"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-4h"></label>
+				 </div>
+			   </td>
+			</tr>
+				<tr>
+			  <td ><h5>Evening</h5></td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="evening" value="Evening-Never"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="evening" value="Evening-Occasionally"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="evening" value="Evening-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="evening" value="Evening-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="evening" value="Evening-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="evening" value="Evening-4h"></label>
+				 </div>
+			   </td>
+			</tr>
+				<tr>
+			  <td ><h5>Night</h5></td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="night" value="Night-Never"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="night" value="Night-Occasionally"</label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="night" value="Night-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="night" value="Night-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="night" value="Night-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="night" value="Night-4h"></label>
+				 </div>
+			   </td>
+			   
+			</tr>
+			</tbody>
+		</table>
+		<br>
+			
+		<h4> 8. On which days do you typically watch TV? </h4>
+		<h6 style="color:red;">(Including your regular TV, Phone, Tablet and online services.)</h6>
+		<table class="table" style="width:50%">
+			<thead>
+				<tr>
+			 <th width="10%"></th>
+					<th width="15%" text-align="center"><h5>Never</h5></th>
+					<th width="15%" text-align="center"><h5>Occasionally</h5></th>
+					<th width="15%" text-align="center"><h5>Less than<br>1 hour</h5></th>
+					<th width="15%" text-align="center"><h5>1 - 2<br>hours</h5></th>
+					<th width="15%" text-align="center"><h5>2 - 4<br>hours</h5></th>
+					<th width="15%" text-align="center"><h5>More than<br>4 hours</h5></th>
+			</tr>
+			</thead>
+			<tbody>
+				<tr> 
+				<td ><h5>Monday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Monday" value="Monday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Monday" value="Monday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Monday" value="Monday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Monday" value="Monday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Monday" value="Monday-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Monday" value="Monday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+				<tr>
+				<td ><h5>Tuesday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+				<tr>
+				<td ><h5>Wednesday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+				<tr>
+				<td ><h5>Thursday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+				<tr>
+				<td ><h5>Friday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Friday" value="Friday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Friday" value="Friday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Friday" value="Friday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Friday" value="Friday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Friday" value="Friday-24h"></label>
+				</div>
+			   <td width = "10%">
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Friday" value="Friday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+				<tr>
+				<td ><h5>Saturday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-24h"></label>
+				</div>
+			   <td>
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+				<tr>
+				<td ><h5>Sunday</h5></td>
+				 <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-Never"</label>
+				</div>
+			  </td>
+			   <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-Occasionally"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-1h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-24h"></label>
+				</div>
+			   <td >
+				 <div class="radio">
+					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-4h"></label>
+				 </div>
+			   </td>
+			  </tr>
+			</tbody>
+		</table>
+		<input type="submit" value="Submit" style="position:absolute;left:40%;width:100px; height:50px;">
+	</form>
+	</div>
+  <div id="inner"style="display: none;">
    
 
     <div id="browser">
+	  <div id="programmes" class="slidey recomended object">
+        <span class="sub_title">Programmes</span> 
+        <span class="more_blue" id="moreblue"><a id="moreprogrammes" onclick='show_more_programmes();'>View All &triangledown;</a></span>
+        <div id="programs"> </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
       <div id="side-b" class="slidey recomended object">
-        <span class="sub_title">SUGGESTIONS FOR YOU</span> 
+        <span class="sub_title">Shared by friends</span> 
         <span class="more_blue" id="moreblue1"><a id="moreprogs" onclick='show_more_recommendations();'>View All &triangledown;</a></span>
         <div id="progs"> </div>
         <div class="clear"></div>
       </div>
       <div class="clear"></div>
      
-
-      <div id="content" class="slidey recomended object">
-        <span class="sub_title">SHARED BY FRIENDS</span>
-        <span class="more_blue" id="moreblue2"><a id='moreshared' onclick='show_shared();'>View All &triangledown;</a></span>
-        <div id="results">
+	  <div id="content" class="slidey recomended object">
+        <span class="sub_title">Select programmes by format:
+			<select onchange="get_format(this);">
+			<option value="Interview">Interview</option>
+			<option value="Documentary">Documentary</option>
+	
+			</select>
+		</span>
+		</span>
+        <span class="more_blue" id="moreblue2"><a id='moreformat' onclick='show_format();'>View All &triangledown;</a></span>
+        <div id="results_format">
+         <div class='dotted_box'> </div>
+        </div>
+         <div class="clear"></div>
+      </div>
+       <div class="clear"></div>
+	   
+      <div id="content3" class="slidey recomended object">
+        <span class="sub_title">Select programmes by genre:
+			<select onchange="get_genre(this);">
+				<option value="Comedy">Comedy</option>
+				<option value="Sitcom">Sitcom</option>
+			</select>
+		</span>
+        <span class="more_blue" id="moreblue4"><a id='moregenre' onclick='show_genre();'>View All &triangledown;</a></span>
+        <div id="results_genre">
          <div class='dotted_box'> </div>
         </div>
          <div class="clear"></div>
@@ -3943,7 +5121,7 @@ function dislike(id,bbcorted,dislike){
       </div>
       <div class="clear"></div>
 
-      
+      <!--
       <div id="content3" class="slidey recomended object">
         <span class="sub_title">WATCH LATER</span>
         <span  class="more_blue" id="moreblue4"><a id="morelater" onclick='show_later();'>View All &triangledown;</a></span>
@@ -3973,7 +5151,7 @@ function dislike(id,bbcorted,dislike){
         <div class="clear"></div>
       </div>
       <div class="clear"></div>
- 
+	  -->
       <div id="side-c">
       </div>
     </div>
@@ -3990,12 +5168,17 @@ function dislike(id,bbcorted,dislike){
   <div id="side-a">
     <div id="tv"></div>
       <!-- <br clear="both"/> -->
-      <h3 class="contrast">YOUR FRIENDS</h3>
-    <div id="roster"></div>
-  </div>
+      <h3 class="contrast">Online</h3>
+    <div id="roster_online"style="overflow-y: scroll; height:200px;">
+	<br>
+	</div>
+	<h3 class="contrast">Offline</h3>
+    <div id="roster_offline" style="overflow-y: scroll; height:200px;">
+	<br>
+	</div>
 </div>
-
-<div id="footer">
+</div>
+<!--<div id="footer">
 
 
    <div id="browse" class="blue menu " style="position:absolute;left:500px"><a href="javascript:show_browse_programmes()">HOME</a></div>
@@ -4003,7 +5186,7 @@ function dislike(id,bbcorted,dislike){
    <div id="randomTED" class="grey menu" style="position:absolute;left:800px"><a href="javascript:new_ted_random()">RANDOM TED SELECTION</a></div>
 
   <div id="logoutspan" onclick="Logout();" href="#" style="position:absolute;left:80%;"></div>
-</div>
+</div> -->
 
 
 
@@ -4037,8 +5220,6 @@ function dislike(id,bbcorted,dislike){
             <div id="disconnected" style="overflow:auto;display: none;" class="alert">
               <h2>Sorry, you've been disconnected - please reload the page.</h2>
             </div>
-
-
 </body>
 </html>
 

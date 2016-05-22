@@ -18,33 +18,18 @@
 	if(!$db) {
 		die("Unable to select database");
 	}
-	$id = $_POST['id'];
-	$startTime = $_POST['starttime'];
-	$endTime = $_POST['endtime'];
-	$rating = $_POST['rating'];
-	$member_id = $_SESSION['SESS_MEMBER_ID'];
-	$countWhole = intval($_POST["count_whole_value"]);
-	$countTags = intval($_POST["count_tags_value"]);
-	$already_tagged = array();
-	$qry="INSERT INTO watch_whole(member_id,program_id,with_subs,whole,start_scene,end_scene) value ($member_id , $id , 1, '$rating',$startTime, $endTime  )";
-	$result=mysql_query($qry);
-	for ($whole = 0; $whole < $countWhole; $whole++) {
-		$tag = $_POST[$whole];
-		$rating = intval($_POST[$whole.'-rating']);
-		$already_tagged[$tag] = $rating;
-		$qry="INSERT INTO rated_whole(member_id,program_id,tag,rating) value ($member_id , $id , '$tag', $rating )";
-		$result=mysql_query($qry);
-	}
-	for ($tags = 0; $tags < $countTags; $tags++) {
-		$tag = $_POST[$tags.'-tags'];
-		if (array_key_exists($tag,$already_tagged)){
-			$rating = $already_tagged[$tag];
-		}else{
-			$rating = intval($_POST[$tags.'-rating']);}
-		$qry="INSERT INTO rated_scenes(member_id,program_id,tag,rating,start_scene,end_scene) value ($member_id , $id , '$tag', $rating,$startTime , $endTime )";
-		$result=mysql_query($qry);
-	} 
-	
-	echo $rating;
+	echo implode(",",$_POST);
+	$id = intval($_POST['id']);
+	$startTime = intval($_POST['start']);
+	$duration = intval($_POST['duration']);
+	$section = $_POST['section'];
+	$rating = intval($_POST['rating']);
+	$long = intval($_POST['too-long']);
+	$short = intval($_POST['too-short']);
+	$enough = intval($_POST['long-enough']);
+	$spoilers = intval($_POST['spoilers']);
+	$member_id = intval($_SESSION['SESS_MEMBER_ID']);
+	$qry="INSERT INTO rating(programme_id,start_point,duration,section,member_id,interesting,long_enough,too_short,too_long,spoilers) values ($id, $startTime, $duration, '$section', $member_id , $rating, $enough, $short, $long, $spoilers  )";
+	mysql_query($qry);
 	
 ?>
