@@ -19,7 +19,7 @@
 	}
 	$format = $_POST['format'];
 	//Create query
-	$qry="SELECT * FROM bbc_programs WHERE format = '$format' ORDER BY RAND() LIMIT 20";
+	$qry="SELECT * FROM bbc_programs WHERE format like '%$format%' ORDER BY RAND() LIMIT 20";
 	
 	$result=mysql_query($qry);  
 	//Check whether the query was successful or not

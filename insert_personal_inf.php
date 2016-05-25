@@ -18,21 +18,7 @@
 	if(!$db) {
 		die("Unable to select database");
 	}
-	$required = array('gender', 'age', 'education', 'genre', 'format', 'morning', 'afternoon', 'evening', 'night', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-	$error = false;
-	foreach($required as $field) {
-		if (empty($_POST[$field])) {
-			$error = true;
-		}
-	}
-
-	if ($error) {?>
-		<script language="javascript" type="text/javascript">
-        alert('Please fill in all the personal questions!');
-        window.location = 'member-index.php';
-		</script>
-		<?php
-	} else {
+	
 		$member_id = $_SESSION['SESS_MEMBER_ID'];
 		$gender = $_POST['gender'];
 		$age = $_POST['age'];
@@ -44,24 +30,18 @@
 		$afternoon = $_POST['afternoon'];
 		$evening = $_POST['evening'];
 		$night = $_POST['night'];
-		$monday = $_POST['Monday'];
-		$tuesday = $_POST['Tuesday'];
-		$wednesday = $_POST['Wednesday'];
-		$thursday = $_POST['Thursday'];
-		$friday = $_POST['Friday'];
-		$saturday = $_POST['Saturday'];
-		$sunday = $_POST['Sunday'];
-		$qry="update members set age='$age',gender='$gender',origin='$origin',fav_format='$format',fav_genre='$genre',
+		$morning_weekend = $_POST['morning_weekend'];
+		$afternoon_weekend = $_POST['afternoon_weekend'];
+		$evening_weekend = $_POST['evening_weekend'];
+		$night_weekend = $_POST['night_weekend'];
+		$qry="update members set education='$education',age='$age',gender='$gender',origin='$origin',fav_format='$format',fav_genre='$genre',
 		pref_morning='$morning',pref_afternoon='$afternoon',pref_evening='$evening',pref_night='$night',
-		pref_monday='$monday',pref_tuesday='$tuesday',pref_wednesday='$wednesday',pref_thursday='$thursday',pref_friday='$friday',pref_saturday='$saturday',pref_sunday='$sunday'
+		pref_morning_weekend='$morning_weekend',pref_afternoon_weekend='$afternoon_weekend',pref_evening_weekend='$evening_weekend',pref_night_weekend='$night_weekend'
 		where member_id = $member_id";
+		echo $qry;
 		$result = mysql_query($qry);
-		?>
-		<script language="javascript" type="text/javascript">
-        window.location = 'member-index.php';
-		</script>
-		<?php
+		echo $result;
 		
-	}
+	
 	
 ?>

@@ -20,14 +20,9 @@
 
 	$member_id = $_SESSION['SESS_MEMBER_ID'];
 
-	$id = $_POST['id'];
-	$bbcorted = $_POST['bbcorted'];
-	$dislike = $_POST['dislike'];
-	if($dislike == 1){
-		$qry="INSERT INTO dislike(member_id,talk_id,bbc_or_ted) value ($member_id , $id , $bbcorted  )";
-	}else{
-		$qry="DELETE FROM dislike where member_id=$member_id and talk_id=$id and bbc_or_ted =$bbcorted ";
-	}
+	$programme_id = $_POST['programme_id'];
+	$share_with_member = $_POST['member_id'];
+	$qry="INSERT IGNORE INTO shared_with_friend(shared_by,shared_with,programme_id) value ($member_id , $share_with_member , $programme  )";
 	$result=mysql_query($qry);
 	echo $result;
 	exit();

@@ -268,34 +268,13 @@ function init(){
 
    // $random=$("#random");
    // $random.addClass("grey").removeClass("blue");
-
-   var grp = window.location.hash;
-   if(grp){
-     my_group = grp.substring(1);
-     //$("#header").show();
-     // $("#roster_wrapper").show();
-     //$(".about").hide();
-     //create_buttons();
-   }else{
-     $.ajax({
-        url: "get_group.php",
-        async: false,
-        success: function (response) {
-            console.log("Th group is = " + response);
-            if(response == null || response == ""){my_group = Math.floor(Math.random()*9999)} //prevent cookie problems
-            else{my_group = response;}
-            //$("#header").show();
-            //$("#roster_wrapper").show();
-        }
-      });
-   }
   
-   clean_loc = String(window.location);
-   window.location.hash=my_group;
+   //clean_loc = String(window.location);
+   //window.location.hash=my_group;
    //$("#group_name").html(my_group);
    // $("#grp_link").html(clean_loc+"#"+my_group);
    // $("#grp_link").attr("href",clean_loc+"#"+my_group);
-   var state = {"canBeAnything": true};
+  // var state = {"canBeAnything": true};
    $(".more_blue").hide();
    add_name();
 
@@ -335,16 +314,113 @@ function add_name(){
 			die("Unable to select database");
 		}
 		$member_id = $_SESSION['SESS_MEMBER_ID'];
-		$qry="SELECT gender,age FROM members where member_id=$member_id";
+		$qry="SELECT gender,age,education,origin,fav_genre,fav_format,pref_morning,pref_afternoon,pref_evening,pref_night,pref_morning_weekend,pref_afternoon_weekend,pref_evening_weekend,pref_night_weekend FROM members where member_id=$member_id";
 		$result=mysql_query($qry);   
-		while ($row = mysql_fetch_array($result)){ ?>
-			var age = <?php echo $row[1]; ?>;
+		while ($row = mysql_fetch_array($result)){ 
+			$gender = $row[0];
+			$age = $row[1];
+			$education = $row[2];
+			$origin = $row[3];
+			$genre = $row[4];
+			$format = $row[5];
+			$mor = $row[6];
+			$aft = $row[7];
+			$even = $row[8];
+			$night = $row[9];
+			$morw = $row[10];
+			$aftw = $row[11];
+			$evenw = $row[12];
+			$nightw = $row[13];
+			?>
+			var age = '<?php echo $row[1]; ?>';
 		<?php
 		}
 		?>
-		if( age == 0){
+		if( age == ''){
 			$("#questions").show();
 			$("#inner").hide();
+			$('#personalForm').submit(function (e) {
+			e.preventDefault();
+			var error_gender = "Please fill in a gender";
+			var error_age = "Please fill in a age";
+			var error_education = "Please fill in your study";
+			var error_origin = "Please fill in your origin";
+			var error_format = "Please select your favourite format";
+			var error_genre = "Please select your favourite genre";
+			var error_weekdays = "Please fill in all you tv preferences";
+			var error_weekend = "Please fill in all you tv preferences";
+			var data = $(this).serializeArray();
+			var weekdays = 0;
+			var weekend = 0;
+			var count = 0;
+			jQuery.each( data, function( i, field ) {
+				if ( field.name == 'gender'){
+					error_gender = "";
+					count += 1;
+				}
+				if ( field.name == 'age'){
+					error_age = "";
+					count += 1;
+				}
+				if ( field.name == 'genre[]'){
+					error_genre = "";
+				
+				}
+				if ( field.name == 'education'){
+					error_education = "";
+					count += 1;
+				}
+				if ( field.name == 'country'){
+					error_origin = "";
+					count += 1;
+				}
+				if ( field.name == 'format[]'){
+					error_format = "";
+				}
+				if (( field.name == 'morning') || (field.name == 'afternoon') || (field.name == 'evening') || (field.name == 'night')){
+					weekdays += 1;
+				}
+				if (( field.name == 'morning_weekend') || (field.name == 'afternoon_weekend') || (field.name == 'evening_weekend') || (field.name == 'night_weekend')){
+					weekend += 1;
+				}
+				
+			});
+			if ( error_genre == ""){
+				count += 1;
+				}
+				if ( error_format == ""){
+				count += 1;
+				}
+			if ( weekdays == 4){
+				error_weekdays = "";
+				count += 1;
+			}
+			if ( weekend == 4 ){
+				error_weekend = "";
+				count += 1;
+			}
+			if ( count == 8 ){
+			$.ajax({
+				type: 'post',
+				url: 'insert_personal_inf.php',
+				data: data,
+				success: function (data) {
+						$("#inner").show();
+						$("#questions").hide();
+					}
+				});}else{
+					document.getElementById("gender-error").innerHTML = error_gender;
+					document.getElementById("age-error").innerHTML = error_age;
+					document.getElementById("education-error").innerHTML = error_education;
+					document.getElementById("origin-error").innerHTML = error_origin;
+					document.getElementById("genre-error").innerHTML = error_genre;
+					document.getElementById("format-error").innerHTML = error_format;
+					document.getElementById("weekdays-error").innerHTML = error_weekdays;
+					document.getElementById("weekend-error").innerHTML = error_weekend;
+
+					show_next_questions(0)
+				}
+			}) 
 		}
 		else{
 			$("#inner").show();
@@ -534,75 +610,42 @@ for (var dat in data) {
 	$("#list_later").html(html.join(''));
 	$("#list_dislikes").html(html_dislikes.join(''));
 	$("#list_likes").html(html_likes.join(''));
-	 var html = [];
-	    <?php
-	   require_once('config.php');
-	
-		//Connect to mysql server
-		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
-		if(!$link) {
-			die('Failed to connect to server: ' . mysql_error());
-		}
-	
-		//Select database
-		$db = mysql_select_db(DB_DATABASE);
-		if(!$db) {
-			die("Unable to select database");
-		}
-		$qry="SELECT id,bbc_id,image_url,title FROM bbc_programs ORDER BY RAND() LIMIT 20";
-		$result=mysql_query($qry);   
-		while ($row = mysql_fetch_array($result)){ ?>
-			var id = <?php echo $row[0]; ?>;
-			var program_id = <?php echo $row[0]; ?>;
-	        var imgUrl = "<?php echo $row[2]; ?>";
-		    var title = "<?php echo str_replace('"',"",$row[3]); ?>";
-	        html = create_html(html,id,program_id,imgUrl,title,1);
-			<?php
-		}
-		?>
+	var html = [];
+	$.ajax({
+      type: "POST",
+      url: "get_random.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
 	$("#programs").html(html.join(''));
-	   var html = [];
-	   $.ajax({
-			type: "POST",
-			url: "get_programmes_by_format.php",
-			async: false,
-			data: {format: "Interview"},
-			dataType: "json",
-			success: function(data){
-				if(data){
-				for (var dat in data) {
-				dat = data[dat];
-				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
-				
-				}
-			}
-		}
-		});
-	
+	var html = [];
+	$.ajax({
+      type: "POST",
+      url: "get_random.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
 	$("#results_format").html(html.join(''));
-	  var html = [];
-	   $.ajax({
-			type: "POST",
-			url: "get_programmes_by_genre.php",
-			async: false,
-			data: {genre: "Comedy"},
-			dataType: "json",
-			success: function(data){
-				if(data){
-				for (var dat in data) {
-				dat = data[dat];
-				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
-				}
-				
-				}
-			}
-		});
-	
-	$("#results_genre").html(html.join(''));
+
   }
   var state = {"canBeAnything": true};
   //history.pushState(state, "N-Screen", "/N-Screen/");
-  window.location.hash=my_group;
+  //window.location.hash=my_group;
   $("#logoutspan").show();
 }
 
@@ -796,6 +839,9 @@ for (var dat in data) {
 		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
 	}	  }
     });
+	
+	
+	
 }
 function create_buttons(){
    //$("#inner").addClass("inner_noscroll");
@@ -1919,22 +1965,84 @@ function get_roster(blink){
 
 function show_browse_programmes(){
   // $("#main_title").html("N-SCREEN");
-  $sr=$("#search_results");
-  $sr.css("display","none");
+ /// $sr=$("#search_results");
+  //$sr.css("display","none");
+   <?php
+	   require_once('config.php');
+	
+		//Connect to mysql server
+		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+		if(!$link) {
+			die('Failed to connect to server: ' . mysql_error());
+		}
+	
+		//Select database
+		$db = mysql_select_db(DB_DATABASE);
+		if(!$db) {
+			die("Unable to select database");
+		}
+		$member_id = $_SESSION['SESS_MEMBER_ID'];
+		$qry="SELECT gender,age FROM members where member_id=$member_id";
+		$result=mysql_query($qry);   
+		while ($row = mysql_fetch_array($result)){ ?>
+			var age = '<?php echo $row[1]; ?>';
+		<?php
+		}
+		?>
+		if( age == ''){
+			$("#questions").show();
+			
+		}else{
+		$("#questions").hide();
+  $("#inner").show();
+  $("#genre_list").hide();
+  $("#format_list").hide();
+  	 var html = [];
+	$.ajax({
+      type: "POST",
+      url: "get_random.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
 
-  $browse=$("#browse");
-  $browse.removeClass("grey").addClass("blue");
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	$("#programs").html(html.join(''));
+	var html = [];
+	$.ajax({
+      type: "POST",
+      url: "get_random.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	$("#results_format").html(html.join(''));
+	
+  }
+  //$browse=$("#browse");
+  //$browse.removeClass("grey").addClass("blue");
 
-  $random=$("#randomBBC");
-  $random.removeClass("blue").addClass("grey");
+ // $random=$("#randomBBC");
+ // $random.removeClass("blue").addClass("grey");
   
-  $random=$("#randomTED");
-  $random.removeClass("blue").addClass("grey");
-  $container=$("#browser");
-  $container.css("display","block");
-  $(document).trigger('refresh');
-   $(document).trigger('refresh_buttons');
-   check_overflow();
+ // $random=$("#randomTED");
+ // $random.removeClass("blue").addClass("grey");
+ // $container=$("#browser");
+ // $container.css("display","block");
+ // $(document).trigger('refresh');
+ //  $(document).trigger('refresh_buttons');
+ //  check_overflow();
 
 }
 
@@ -3473,6 +3581,7 @@ $(document).bind('tv_changed', function (ev,item) {
 
 $(document).bind('refresh', function () {
                 $( "#draggable" ).draggable();
+				$( ".programme" ).draggable();
                 $( ".programme" ).draggable(
                         {
                         appendTo: 'body',
@@ -3673,11 +3782,11 @@ function update_online_members() {
 		var lastname = dat['lastname'];
 		var facebookId = dat['facebook_id'];
 		if(facebookId == null){
-			html_online.push('<img id="member_'+id+'" src="images/user-default.png" alt="test" height="30" width="30" class="snaptarget">'+firstname+' '+lastname+'<br>');
+			html_online.push('<span ondrop="drop(event)" ondragover="allowDrop(event)" id="member_'+id+'" ><img src="images/user-default.png" alt="test" height="30" width="30" class="snaptarget" >'+firstname+' '+lastname+'<br></span>');
 
 		}
 		else{
-			html_online.push('<img id="member_'+id+'" src="https://graph.facebook.com/'+facebookId+'/picture?type=large" alt="test" height="30" width="30" class="snaptarget">'+firstname+' '+lastname+'<br>');
+			html_online.push('<span ondrop="drop(event)" ondragover="allowDrop(event)" id="member_'+id+'" ><img src="https://graph.facebook.com/'+facebookId+'/picture?type=large" alt="test" height="30" width="30" >'+firstname+' '+lastname+'<br></span>');
 		}
 		}
 	}	  }
@@ -3697,7 +3806,7 @@ function update_online_members() {
 		var id = dat['member_id'];
 		var firstname = dat['firstname'];
 		var lastname = dat['lastname'];
-		html_offline.push('<img id="member_'+id+'" src="images/user-default.png" alt="test" height="30" width="30" class="snaptarget">'+firstname+' '+lastname+'<br>');
+		html_offline.push('<span ondrop="drop(event)" ondragover="allowDrop(event)" id="member_'+id+'" ><img src="images/user-default.png" alt="test" height="30" width="30">'+firstname+' '+lastname+'<br></span>');
 		}
 	}	  }
     });
@@ -3720,7 +3829,27 @@ function update_online_members() {
 		if( html != ""){
 			$("#progs").html(html.join(''));}
 		else{
-			$("#progs").html("No programs shared with you yet");
+			$("#progs").html("<div class='dotted_box'><br><br><br>No programs in this section yet </div>");
+		}
+		var html = [];
+    $.ajax({
+      type: "POST",
+      url: "get_recently_viewed.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+		for (var dat in data) {
+		dat = data[dat]
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+	 
+		if( html != ""){
+			$("#history2").html(html.join(''));}
+		else{
+			$("#history2").html("<div class='dotted_box'><br><br><br>No programs in this section yet </div>");
 		}
 }
 		
@@ -3775,7 +3904,7 @@ $("#new_overlay").empty();
        url: 'logout.php',
        async : false,
          success: function(){
-           window.location.href= "http://localhost/N-Screen/";
+           window.location.href= "http://www.n-screen.crowdtruth.org";
          }
       });
     //console.log("RESPUESTA  "+ lalala):
@@ -3895,7 +4024,7 @@ function new_ted_random(){
 }
 
 function create_html(html,id,program_id,imgUrl,title,bbcorted){
-	var string = "<div  id=\""+id+"\" pid=\""+id+"\" class=\"ui-widget-content button programme ui-draggable recomended object\" " ;
+	var string = "<div  id=\""+id+"\" pid=\""+id+"\" class=\"ui-widget-content button programme ui-draggable recomended object\" draggable=\"true\" ondragstart=\"drag(event)\" " ;
     string += " onclick= \"javascript:watch_video(";
     string += id+","+bbcorted+");return true\">";
 	html.push(string);
@@ -3911,10 +4040,10 @@ function create_html(html,id,program_id,imgUrl,title,bbcorted){
 		}
       html.push("<div class = 'gradient_div_icons' style='margin-top:-54px;'>");
       if(not_in_list(id,list_watch_later)){
-        html.push("<img id=\"watch_random"+id+"\" class=\"overlapicon\" src=\"/images/icons/watch_later.png\"/>");
+        html.push("<img id=\"watch_random"+id+"\" class=\"watch_random"+id+" overlapicon\" src=\"/images/icons/watch_later.png\"/>");
       }
       else{
-        html.push("<img id='watch_random"+id+"' class=\"overlapicon\" src=\"/images/icons/on_watch_later.png\"/>");
+        html.push("<img id='watch_random"+id+"' class=\"watch_random"+id+" overlapicon\" src=\"/images/icons/on_watch_later.png\"/>");
       }
       if(not_in_list(id,list_likes)){
 		if(not_in_list(id,list_dislikes)){
@@ -3946,6 +4075,30 @@ function create_html(html,id,program_id,imgUrl,title,bbcorted){
 	html.push("</div>");
 	return html;
 }
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var dat = ev.dataTransfer.getData("text");
+	var share_with = ev.target.id
+	$.ajax({
+	type:'POST',
+	url: 'insert_share.php',
+	data:{programme_id: dat, member_id: share_with},
+	dataType: "json",
+	success: function (data) {
+	}
+		
+	});
+}
+
 function watch_video(id,bbcorted) {
       $.ajax({
 		type:'POST',
@@ -3970,16 +4123,10 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,se
 	  tags = tags_video;
 	  scene_tags = scene_tags_video;
       var div = $("#"+id);
-	  var bbcorted = 0;
-      if( titleRaw.indexOf(":") > -1){
-		var speaker = (/(.*):.*?/.exec(titleRaw))[1];
-		var title = (/.*?:(.*)/.exec(titleRaw))[1];
-	  }
-	  else{
-		var speaker = "";
+	 var speaker = "";
 		var title = titleRaw;
 		bbcorted = 1;
-	  }
+	
      
 	  var flag = false
       html = [];
@@ -3998,10 +4145,10 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,se
       html.push("<div style='margin-top:-54px;'>");
 	  
       if(not_in_list(id,list_watch_later)){
-        html.push("<img id=\"watch_random"+id+"\" class=\"overlapicon\"  src=\"/images/icons/watch_later.png\"/>");
+        html.push("<img id=\"watch_random"+id+"\" class=\"watch_random"+id+" overlapicon\"  src=\"/images/icons/watch_later.png\"/>");
       }
       else{
-        html.push("<img id=\"watch_random"+id+"\" class=\"overlapicon\" src=\"/images/icons/on_watch_later.png\"/>");
+        html.push("<img id=\"watch_random"+id+"\" class=\"watch_random"+id+" overlapicon\" src=\"/images/icons/on_watch_later.png\"/>");
       }
            if(not_in_list(id,list_likes)){
 		if(not_in_list(id,list_dislikes)){
@@ -4040,7 +4187,7 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,se
 
       html2 = [];
 
-      html2.push("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/>Exit</div>");
+      html2.push("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div>");
       html2.push("<div id=\"video_"+id+"\" pid=\""+pid+"\" href=\""+video+"\"  class=\"large_prog recomended object\" style=\"position: relative;\">");
       html2.push("<div class=\"gradient_div\" style=\"text-align: center;  margin-left: 55%; position: absolute; \"> <img class=\"img\" src=\""+img+"\" />");
       html2.push("<div id=\"play_"+id+"_"+start+"_"+end+"_"+section+"\" class=\"play_button recomended object\" onclick=\"javascript:show_video('"+video+"',"+id+","+bbcorted+","+start+","+end+",'"+section+"');\"><img style='width: 120px;' src=\"/images/icons/play.png\" /></a></div></div>");
@@ -4129,9 +4276,27 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,se
 		}
 		});
 	  }
+	   var html = [];
+	   
+	$.ajax({
+      type: "POST",
+      url: "get_random.php",
+      async: false,
+      data: {},
+      dataType: "json",
+      success: function(data){
+		if(data){
+for (var dat in data) {
+		dat = data[dat]
+
+		html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1)}
+	}	  }
+    });
+		
 	  
       $('#new_overlay').append("<div id='spinner' style=\"float: left;\"></div>");
-	  $('#spinner').append(html_related.join(''));
+	  $("#spinner").html(html.join(''));
+	  //$('#spinner').append(html_related.join(''));
       $('#new_overlay').append("<div class='clear'></div>");
       check_overflow();
       
@@ -4139,24 +4304,34 @@ function add_video(id,pid,titleRaw,video,img,speaker_id,description,start,end,se
 
 function show_video(videoUrl,id,bbcorted,startTime,end,section){
 	if(bbcorted=="1"){
-	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+end+",\""+section+"\");'/>Exit</div><div  id='player'><iframe id='myvid' width=\"854\" height=\"480\" src=\""+videoUrl+"?start="+startTime+"&end="+end+"&version=3\" frameborder=\"0\" allowfullscreen></iframe></div>");
+	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+end+",\""+section+"\");'/></div><div  id='player'><video id='myvid' width='100%' controls=''  autoplay onpause='javascript:hide_overlay();javascript:watch_whole("+id+","+startTime+","+end+",\""+section+"\");'><source src=\""+videoUrl+"#t="+startTime+","+end+"\" type=\"video/mp4\"></video></div>");
 	}else{
-	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/>Exit</div><div id='player'><video id='myvid' width='100%' controls=''><source src=\""+videoUrl+"\" type=\"video/mp4\"></video></div>");
+	$("#new_overlay").html("<div id='close' class='close_button recomended object'><img src='/images/icons/exit.png' width='12px' onclick='javascript:hide_overlay();'/></div><div id='player'><video id='myvid' width='100%' controls=''><source src=\""+videoUrl+"\" type=\"video/mp4\"></video></div>");
 	}
 }
 
+function show_next_questions(id){
+	if( id == 0){
+	$("#preferences").hide();
+		$("#demographics").show();
+		
+	}else{
+		$("#preferences").show();
+		$("#demographics").hide();
+	}
+}
 function watch_whole(id,startTime,endTime,section){
 	var duration = endTime - startTime;
 	html = [];
 	count_whole = 0;
 	count_tags = 0;
-	html.push('<form id="ratingsform" action="insert_rates.php" method="post">');
-	html.push("<div id='confirm' style='position:absolute;left:10%;'>Would you like to watch the full programme?</div>");
+	html.push('<br><br><br><br><form id="ratingsform" action="insert_rates.php" method="post" >');
+	html.push("<div id='confirm' style='position:absolute;left:10%;'>Would you like to watch the full programme?</div><br><span style='position:absolute;left:10%;' id='fullprogram_error'></span><br>");
 	html.push('<br><span name="confirm" style="position:absolute;left:20%;">');
 	html.push('No:<input class="star" type="radio" name="rating" value="0" onClick="not_interesting()"/>');
 	html.push('Yes:<input class="star" type="radio" name="rating" value="1" onClick="interesting()"/>');
 	html.push('</span>');
-	html.push("<br><br><div id='interesting' style='position:absolute;left:10%;'><span id='interesting_title'> Please fill in the following questions about your opinion of the extract:</span>");
+	html.push("<br><br><div id='interesting' style='position:absolute;left:10%;'><span id='interesting_title'> Please fill in the following questions about your opinion of the extract:</span><br><span id='extract_error' style='position:absolute;left:10%;'></span><br>");
 	html.push("<br>");
 html.push("<br>");
 	html.push('<table style="width:100%">');
@@ -4213,17 +4388,41 @@ html.push("<br>");
 	$("#new_overlay").html(html.join(''));
 	$('#new_overlay').show();
 	$('#ratingsform').submit(function (e) {
-	e.preventDefault();
-	var data = $(this).serializeArray();
-	$.ajax({
-		type: 'post',
-		url: 'insert_rates.php',
-		data: data,
-		success: function (data) {
-		$('#new_overlay').hide();
-		}
-	});
-	}) 
+			e.preventDefault();
+			var error_rating = "Please fill in if you are willing to watch the whole programme";
+			var error_questions = "Please fill in all the rows below";
+			var data = $(this).serializeArray();
+			var questions = 0
+			var count = 0;
+			jQuery.each( data, function( i, field ) {
+				if ( field.name == 'rating'){
+					error_rating = "";
+					count += 1;
+				}
+				if (( field.name == 'long-enough') || (field.name == 'too-short') || (field.name == 'too-long') || (field.name == 'spoilers')){
+					questions += 1;
+				}
+				
+			});
+			if ( questions == 4){
+				error_questions = "";
+				count += 1;
+			}
+			if ( count == 2 ){
+			$.ajax({
+				type: 'post',
+				url: 'insert_rates.php',
+				data: data,
+				success: function (data) {
+						$('#new_overlay').hide();
+					}
+				});}else{
+					document.getElementById("fullprogram_error").innerHTML = error_rating;
+					document.getElementById("extract_error").innerHTML = error_questions;
+
+				}
+			}) 
+	
 }
 
 
@@ -4248,10 +4447,10 @@ function watch_later(id,bbcorted,watched){
 			success: function (data) {	
 				  if( watched == 0){
 					$("#watchlater").html("<img id='addtowatchlater' style='width: 40px;' onclick=\"javascript:watch_later("+id+","+bbcorted+",1);\" src=\"/images/icons/watch_later.png\" /><span style='display: block'; class ='inter_span'>Watch Later</span>");
-				    $("#watch_random"+id).attr("src","/images/icons/watch_later.png");
+				    $(".watch_random"+id).attr("src","/images/icons/watch_later.png");
 				  }else{
   					$("#watchlater").html("<img id='deletewatchlater' style='width: 40px;' onclick=\"javascript:watch_later("+id+","+bbcorted+",0);\" src=\"/images/icons/on_watch_later.png\" /><span style='display: block'; class ='on_inter_span'>Watch Later</span>");
-					$("#watch_random"+id).attr("src","/images/icons/on_watch_later.png");
+					$(".watch_random"+id).attr("src","/images/icons/on_watch_later.png");
 				  }					
 			}
 	  });
@@ -4358,10 +4557,366 @@ function get_format(format){
 
 	
 }
+function show_format(){
+<?php
+	   require_once('config.php');
+	
+		//Connect to mysql server
+		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+		if(!$link) {
+			die('Failed to connect to server: ' . mysql_error());
+		}
+	
+		//Select database
+		$db = mysql_select_db(DB_DATABASE);
+		if(!$db) {
+			die("Unable to select database");
+		}
+		$member_id = $_SESSION['SESS_MEMBER_ID'];
+		$qry="SELECT gender,age FROM members where member_id=$member_id";
+		$result=mysql_query($qry);   
+		while ($row = mysql_fetch_array($result)){ ?>
+			var age = '<?php echo $row[1]; ?>';
+		<?php
+		}
+		?>
+		if( age == ''){
+			$("#questions").show();
+			$("#inner").hide();
+	}else{
+$("#inner").hide();
+$("#questions").hide();
+$("#format_list").show();
+$("#genre_list").hide();
+  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_format.php",
+			async: false,
+			data: {format: "documentaries"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#docs").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_format.php",
+			async: false,
+			data: {format: "quizzes"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#quiz").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_format.php",
+			async: false,
+			data: {format: "events"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#talent").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_format.php",
+			async: false,
+			data: {format: "reality"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#real").html(html.join(''));}
+}
+function show_profile_page(){
+		<?php
+	   require_once('config.php');
+	
+		//Connect to mysql server
+		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+		if(!$link) {
+			die('Failed to connect to server: ' . mysql_error());
+		}
+	
+		//Select database
+		$db = mysql_select_db(DB_DATABASE);
+		if(!$db) {
+			die("Unable to select database");
+		}
+		$member_id = $_SESSION['SESS_MEMBER_ID'];
+		$qry="SELECT gender,age,education,origin,fav_genre,fav_format,pref_morning,pref_afternoon,pref_evening,pref_night,pref_morning_weekend,pref_afternoon_weekend,pref_evening_weekend,pref_night_weekend FROM members where member_id=$member_id";
+		$result=mysql_query($qry);   
+		while ($row = mysql_fetch_array($result)){ 
+			$gender = $row[0];
+			$age = $row[1];
+			$education = $row[2];
+			$origin = $row[3];
+			$genre = $row[4];
+			$format = $row[5];
+			$morning = $row[6];
+			$afternoon = $row[7];
+			$evening = $row[8];
+			$night = $row[9];
+			$morning_weekend = $row[10];
+			$afternoon_weekend = $row[11];
+			$evening_weekend = $row[12];
+			$night_weekend = $row[13];
+			?>
+			var age = '<?php echo $row[1]; ?>';
+		<?php
+		}
+		?>
+		if( age == ''){
+			$("#questions").show();
+			$("#inner").hide();
+		}else{
+			var error_gender = "";
+			var error_age = "";
+			var error_education = "";
+			var error_origin = "";
+			var error_format = "";
+			var error_genre = "";
+			var error_weekdays = "";
+			var error_weekend = "";
+			show_next_questions(0);
+			document.getElementById("using_application").innerHTML = "<h3>The following answers are given by you: </h3>";
+			$('#personalForm').submit(function (e) {
+			e.preventDefault();
+			var error_gender = "Please fill in a gender";
+			var error_age = "Please fill in a age";
+			var error_education = "Please fill in your study";
+			var error_origin = "Please fill in your origin";
+			var error_format = "Please select your favourite format";
+			var error_genre = "Please select your favourite genre";
+			var error_weekdays = "Please fill in all you tv preferences";
+			var error_weekend = "Please fill in all you tv preferences";
+			var data = $(this).serializeArray();
+			var weekdays = 0;
+			var weekend = 0;
+			var count = 0;
+			jQuery.each( data, function( i, field ) {
+				if ( field.name == 'gender'){
+					error_gender = "";
+					count += 1;
+				}
+				if ( field.name == 'age'){
+					error_age = "";
+					count += 1;
+				}
+				if ( field.name == 'genre[]'){
+					error_genre = "";
+				
+				}
+				if ( field.name == 'education'){
+					error_education = "";
+					count += 1;
+				}
+				if ( field.name == 'country'){
+					error_origin = "";
+					count += 1;
+				}
+				if ( field.name == 'format[]'){
+					error_format = "";
+				}
+				if (( field.name == 'morning') || (field.name == 'afternoon') || (field.name == 'evening') || (field.name == 'night')){
+					weekdays += 1;
+				}
+				if (( field.name == 'morning_weekend') || (field.name == 'afternoon_weekend') || (field.name == 'evening_weekend') || (field.name == 'night_weekend')){
+					weekend += 1;
+				}
+				
+			});
+			if ( error_genre == ""){
+				count += 1;
+				}
+				if ( error_format == ""){
+				count += 1;
+				}
+			if ( weekdays == 4){
+				error_weekdays = "";
+				count += 1;
+			}
+			if ( weekend == 4 ){
+				error_weekend = "";
+				count += 1;
+			}
+			if ( count == 8 ){
+			$.ajax({
+				type: 'post',
+				url: 'insert_personal_inf.php',
+				data: data,
+				success: function (data) {
+						$("#inner").show();
+						$("#questions").hide();
+					}
+				});}else{
+					document.getElementById("gender-error").innerHTML = error_gender;
+					document.getElementById("age-error").innerHTML = error_age;
+					document.getElementById("education-error").innerHTML = error_education;
+					document.getElementById("origin-error").innerHTML = error_origin;
+					document.getElementById("genre-error").innerHTML = error_genre;
+					document.getElementById("format-error").innerHTML = error_format;
+					document.getElementById("weekdays-error").innerHTML = error_weekdays;
+					document.getElementById("weekend-error").innerHTML = error_weekend;
+
+					show_next_questions(0)
+				}
+			}) 		
+	$("#questions").show();
+	$("#inner").hide();
+	$("#format_list").hide();
+	$("#genre_list").hide();
+	}
+}
+function show_genre(){
+ <?php
+	   require_once('config.php');
+	
+		//Connect to mysql server
+		$link = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD);
+		if(!$link) {
+			die('Failed to connect to server: ' . mysql_error());
+		}
+	
+		//Select database
+		$db = mysql_select_db(DB_DATABASE);
+		if(!$db) {
+			die("Unable to select database");
+		}
+		$member_id = $_SESSION['SESS_MEMBER_ID'];
+		$qry="SELECT gender,age FROM members where member_id=$member_id";
+		$result=mysql_query($qry);   
+		while ($row = mysql_fetch_array($result)){ ?>
+			var age = '<?php echo $row[1]; ?>';
+		<?php
+		}
+		?>
+		if( age == ''){
+			$("#questions").show();
+			$("#inner").hide();
+	}else{
+	$("#questions").hide();
+$("#inner").hide();
+$("#format_list").hide();
+$("#genre_list").show();
+  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_genre.php",
+			async: false,
+			data: {genre: "comedy"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#comedies").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_genre.php",
+			async: false,
+			data: {genre: "factual"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#fac").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_genre.php",
+			async: false,
+			data: {genre: "entertainment"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#entertainment").html(html.join(''));
+	  var html = [];
+	   $.ajax({
+			type: "POST",
+			url: "get_programmes_by_genre.php",
+			async: false,
+			data: {genre: "drama"},
+			dataType: "json",
+			success: function(data){
+				if(data){
+				for (var dat in data) {
+				dat = data[dat];
+				html = create_html(html,dat['id'],dat['id'],dat['image_url'],dat['title'],1);
+				
+				}
+			}
+		}
+		});
+	
+	$("#drama").html(html.join(''));}
+}
 </script>
 
   <div id="header">
-    <span id='main_title'><a href="javascript:show_browse_programmes()" style='color: #FFFFFF;'>N-SCREEN</a></span>
+    <span id='main_title'><a href="javascript:show_browse_programmes()" style='color: #FFFFFF;'>N-SCREEN</a><a href="javascript:show_genre()" style='position: relative;left:40%;color: #FFFFFF;'>Programmes by Genre</a><a href="javascript:show_format()" style='position: relative;left:50%;color: #FFFFFF;'>Programmes by Format</a></span>
     <span id='small_title'></span>
 
     <!-- <span id="logoutspan" href="#" onclick="Logout();">LOGOUT</a> -->
@@ -4379,7 +4934,7 @@ function get_format(format){
         <input type="text" id="search_text" name="search_text" value="search programmes" onclick="javascript:remove_search_text();return false;"/>
       </form>
     </span> -->
-    <div style="top:10px;right:10px;position:absolute;">Logged in as: <?php echo $_SESSION['SESS_FIRST_NAME']; ?> <?php echo $_SESSION['SESS_LAST_NAME']; ?></div> 
+    <div onclick='show_profile_page();' style="top:10px;right:50px;position:absolute;">Logged in as: <?php echo $_SESSION['SESS_FIRST_NAME']; ?> <?php echo $_SESSION['SESS_LAST_NAME']; ?></div> 
 
   </div>
 
@@ -4392,283 +4947,173 @@ function get_format(format){
 
 <div id="container">
 
-	<div id="questions"style="display: none;">
-	<form class="form-horizontal" role="form" method="post" action="insert_personal_inf.php">');
-		<br><br><br>
-		<h3>Before using the application please fill in the following questions:</h3> 
-		<h4 for="control">1. What is your gender?</h4>
+	<div id="questions" style="position:absolute;left:20%;display: none;">
+	<div id="demographics" style="display:block;">
+	<form id="personalForm" class="form-horizontal" role="form" method="post" action="insert_personal_inf.php">');
+		<br><br><br><div id="using_application">
+		<h3 >Before using the application please answer the following questions:</h3></div>
+		<h4 for="control">1. What is your gender?</h4><font size="3" color="red"><span id="gender-error"></span></font>
 		<div class="radio" >
-			<label class="radio"><input type="radio" value="Male" name="gender">Male</label>
+			<label class="radio"><input type="radio" value="Male"  <?php if (isset($gender) && $gender=="Male") echo "checked";?> name="gender">Male</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" value="Female" name="gender">Female</label>
+			<label class="radio"><input type="radio" value="Female" <?php if (isset($gender) && $gender=="Female") echo "checked";?> name="gender">Female</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" value="Other" name="gender">Other</label>
+			<label class="radio"><input type="radio" value="Other" <?php if (isset($gender) && $gender=="Other") echo "checked";?> name="gender">Other</label>
 		</div>
-		<h4>2. What is your age?</h4>
+		<h4>2. What is your age?</h4><font size="3" color="red"><span id="age-error"></span></font>
 		<select id="age" name= "age" class="form-control">
-			<option>Under 18</option>
-			<option>18</option>
-			<option>19</option>
-			<option>20</option>
-			<option>21</option>
-			<option>22</option>
-			<option>23</option>
-			<option>24</option>
-			<option>25</option>
-			<option>26</option>
-			<option>27</option>
-			<option>28</option>
-			<option>29</option>
-			<option>30</option>
-			<option>Above 30</option>
+			<option <?php if (isset($age) && $age=="Under 18") echo "selected";?>>Under 18</option>
+			<option <?php if (isset($age) && $age=="18") echo "selected";?>>18</option>
+			<option <?php if (isset($age) && $age=="19") echo "selected";?>>19</option>
+			<option <?php if (isset($age) && $age=="20") echo "selected";?>>20</option>
+			<option <?php if (isset($age) && $age=="21") echo "selected";?>>21</option>
+			<option <?php if (isset($age) && $age=="22") echo "selected";?>>22</option>
+			<option <?php if (isset($age) && $age=="23") echo "selected";?>>23</option>
+			<option <?php if (isset($age) && $age=="24") echo "selected";?>>24</option>
+			<option <?php if (isset($age) && $age=="25") echo "selected";?>>25</option>
+			<option <?php if (isset($age) && $age=="26") echo "selected";?>>26</option>
+			<option <?php if (isset($age) && $age=="27") echo "selected";?>>27</option>
+			<option <?php if (isset($age) && $age=="28") echo "selected";?>>28</option>
+			<option <?php if (isset($age) && $age=="29") echo "selected";?>>29</option>
+			<option <?php if (isset($age) && $age=="30") echo "selected";?>>30</option>
+			<option <?php if (isset($age) && $age=="Above 30") echo "selected";?>>Above 30</option>
 		</select>
-		<h4>3. What is you level of education?</h4>
+		<h4>3. What is your study course?</h4><font size="3" color="red"><span id="education-error"></span></font>
 		<div class="radio" >
-			<label class="radio"><input type="radio" id="education" value="None" name="education"/>No schooling completed</label>
+			<label class="radio"><input type="radio" id="education" value="information_science" <?php if (isset($education) && $education=="information_science") echo "checked";?> name="education" />Information sciences</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" id="education" value="HighSchoolGraduate" name="education"/>High school graduate</label>
+			<label class="radio"><input type="radio" id="education" value="Artificial_intelligence" <?php if (isset($education) && $education=="Artificial_intelligence") echo "checked";?> name="education"/>Artificial intelligence</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" id="education" value="SomeCollege" name="education"/>Some college credit, no degree</label>
+			<label class="radio"><input type="radio" id="education" value="Computer_science" <?php if (isset($education) && $education=="Computer_science") echo "checked";?> name="education"/>Computer science</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" id="education" value="BachelorDegree" name="education"/>Bachelors degree</label>
+			<label class="radio"><input type="radio" id="education" value="Bèta-gamma" <?php if (isset($education) && $education=="Bèta-gamma") echo "checked";?> name="education"/>Bèta-gamma</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" id="education" value="MasterDegree" name="education"/>Masters degree</label>
+			<label class="radio"><input type="radio" id="education" value="psychology" <?php if (isset($education) && $education=="psychology") echo "checked";?> name="education"/>Psychology</label>
 		</div>
 		<div class="radio" >
-			<label class="radio"><input type="radio" id="education" value="AdvancedGraduate" name="education"/>Advanced graduate work or Ph.D.</label>
+			<label class="radio"><input type="radio" id="education" value="other" <?php if (isset($education) && $education=="other") echo "checked";?> name="education"/>Other</label>
 		</div>
-		<h4>4. What country were you born in?</h4>
-				<select id="country" name= "country" class="form-control">
-					<option></option>
-					<option>Afghanistan</option>
-					<option>Albania</option>
-					<option>Algeria</option>
-					<option>Andorra</option>
-					<option>Angola</option>
-					<option>Antigua & Deps</option>
-					<option>Argentina</option>
-					<option>Armenia</option>
-					<option>Australia</option>
-					<option>Austria</option>
-					<option>Azerbaijan</option>
-					<option>Bahamas</option>
-					<option>Bahrain</option>
-					<option>Bangladesh</option>
-					<option>Barbados</option>
-					<option>Belarus</option>
-					<option>Belgium</option>
-					<option>Belize</option>
-					<option>Benin</option>
-					<option>Bhutan</option>
-					<option>Bolivia</option>
-					<option>Bosnia Herzegovina</option>
-					<option>Botswana</option>
-					<option>Brazil</option>
-					<option>Brunei</option>
-					<option>Bulgaria</option>
-					<option>Burkina</option>
-					<option>Burundi</option>
-					<option>Cambodia</option>
-					<option>Cameroon</option>
-					<option>Canada</option>
-					<option>Cape Verde</option>
-					<option>Central African Rep</option>
-					<option>Chad</option>
-					<option>Chile</option>
-					<option>China</option>
-					<option>Colombia</option>
-					<option>Comoros</option>
-					<option>Congo</option>
-					<option>Congo {Democratic Rep}</option>
-					<option>Costa Rica</option>
-					<option>Croatia</option>
-					<option>Cuba</option>
-					<option>Cyprus</option>
-					<option>Czech Republic</option>
-					<option>Denmark</option>
-					<option>Djibouti</option>
-					<option>Dominica</option>
-					<option>Dominican Republic</option>
-					<option>East Timor</option>
-					<option>Ecuador</option>
-					<option>Egypt</option>
-					<option>El Salvador</option>
-					<option>Equatorial Guinea</option>
-					<option>Eritrea</option>
-					<option>Estonia</option>
-					<option>Ethiopia</option>
-					<option>Fiji</option>
-					<option>Finland</option>
-					<option>France</option>
-					<option>Gabon</option>
-					<option>Gambia</option>
-					<option>Georgia</option>
-					<option>Germany</option>
-					<option>Ghana</option>
-					<option>Greece</option>
-					<option>Grenada</option>
-					<option>Guatemala</option>
-					<option>Guinea</option>
-					<option>Guinea-Bissau</option>
-					<option>Guyana</option>
-					<option>Haiti</option>
-					<option>Honduras</option>
-					<option>Hungary</option>
-					<option>Iceland</option>
-					<option>India</option>
-					<option>Indonesia</option>
-					<option>Iran</option>
-					<option>Iraq</option>
-					<option>Ireland {Republic}</option>
-					<option>Israel</option>
-					<option>Italy</option>
-					<option>Ivory Coast</option>
-					<option>Jamaica</option>
-					<option>Japan</option>
-					<option>Jordan</option>
-					<option>Kazakhstan</option>
-					<option>Kenya</option>
-					<option>Kiribati</option>
-					<option>Korea North</option>
-					<option>Korea South</option>
-					<option>Kosovo</option>
-					<option>Kuwait</option>
-					<option>Kyrgyzstan</option>
-					<option>Laos</option>
-					<option>Latvia</option>
-					<option>Lebanon</option>
-					<option>Lesotho</option>
-					<option>Liberia</option>
-					<option>Libya</option>
-					<option>Liechtenstein</option>
-					<option>Lithuania</option>
-					<option>Luxembourg</option>
-					<option>Macedonia</option>
-					<option>Madagascar</option>
-					<option>Malawi</option>
-					<option>Malaysia</option>
-					<option>Maldives</option>
-					<option>Mali</option>
-					<option>Malta</option>
-					<option>Marshall Islands</option>
-					<option>Mauritania</option>
-					<option>Mauritius</option>
-					<option>Mexico</option>
-					<option>Micronesia</option>
-					<option>Moldova</option>
-					<option>Monaco</option>
-					<option>Mongolia</option>
-					<option>Montenegro</option>
-					<option>Morocco</option>
-					<option>Mozambique</option>
-					<option>Myanmar, {Burma}</option>
-					<option>Namibia</option>
-					<option>Nauru</option>
-					<option>Nepal</option>
-					<option>Netherlands</option>
-					<option>New Zealand</option>
-					<option>Nicaragua</option>
-					<option>Niger</option>
-					<option>Nigeria</option>
-					<option>Norway</option>
-					<option>Oman</option>
-					<option>Pakistan</option>
-					<option>Palau</option>
-					<option>Panama</option>
-					<option>Papua New Guinea</option>
-					<option>Paraguay</option>
-					<option>Peru</option>
-					<option>Philippines</option>
-					<option>Poland</option>
-					<option>Portugal</option>
-					<option>Qatar</option>
-					<option>Romania</option>
-					<option>Russian Federation</option>
-					<option>Rwanda</option>
-					<option>St Kitts & Nevis</option>
-					<option>St Lucia</option>
-					<option>Saint Vincent & the Grenadines</option>
-					<option>Samoa</option>
-					<option>San Marino</option>
-					<option>Sao Tome & Principe</option>
-					<option>Saudi Arabia</option>
-					<option>Senegal</option>
-					<option>Serbia</option>
-					<option>Seychelles</option>
-					<option>Sierra Leone</option>
-					<option>Singapore</option>
-					<option>Slovakia</option>
-					<option>Slovenia</option>
-					<option>Solomon Islands</option>
-					<option>Somalia</option>
-					<option>South Africa</option>
-					<option>South Sudan</option>
-					<option>Spain</option>
-					<option>Sri Lanka</option>
-					<option>Sudan</option>
-					<option>Suriname</option>
-					<option>Swaziland</option>
-					<option>Sweden</option>
-					<option>Switzerland</option>
-					<option>Syria</option>
-					<option>Taiwan</option>
-					<option>Tajikistan</option>
-					<option>Tanzania</option>
-					<option>Thailand</option>
-					<option>Togo</option>
-					<option>Tonga</option>
-					<option>Trinidad & Tobago</option>
-					<option>Tunisia</option>
-					<option>Turkey</option>
-					<option>Turkmenistan</option>
-					<option>Tuvalu</option>
-					<option>Uganda</option>
-					<option>Ukraine</option>
-					<option>United Arab Emirates</option>
-					<option>United Kingdom</option>
-					<option>United States</option>
-					<option>Uruguay</option>
-					<option>Uzbekistan</option>
-					<option>Vanuatu</option>
-					<option>Vatican City</option>
-					<option>Venezuela</option>
-					<option>Vietnam</option>
-					<option>Yemen</option>
-					<option>Zambia</option>
-					<option>Zimbabwe</option>
+		<h4>4. What country were you born in?</h4><font size="3" color="red"><span id="origin-error"></span></font>
+				<select id="country" name= "country" class="form-control" selected="Grenada">
+					<option <?php if (isset($origin) && $origin=="Afghanistan") echo "selected";?>>Afghanistan</option>
+					<option <?php if (isset($origin) && $origin=="Argentina") echo "selected";?>>Argentina</option>
+					<option <?php if (isset($origin) && $origin=="Armenia") echo "selected";?>>Armenia</option>
+					<option <?php if (isset($origin) && $origin=="Australia") echo "selected";?>>Australia</option>
+					<option <?php if (isset($origin) && $origin=="Austria") echo "selected";?>>Austria</option>
+					<option <?php if (isset($origin) && $origin=="Azerbaijan") echo "selected";?>>Azerbaijan</option>
+					<option <?php if (isset($origin) && $origin=="Belgium") echo "selected";?>>Belgium</option>
+					<option <?php if (isset($origin) && $origin=="Bosnia Herzegovina") echo "selected";?>>Bosnia Herzegovina</option>
+					<option <?php if (isset($origin) && $origin=="Botswana") echo "selected";?>>Botswana</option>
+					<option <?php if (isset($origin) && $origin=="Brazil") echo "selected";?>>Brazil</option>
+				
+					<option <?php if (isset($origin) && $origin=="Bulgaria") echo "selected";?>>Bulgaria</option>
+				
+					
+					<option <?php if (isset($origin) && $origin=="China") echo "selected";?>>China</option>
+					<option <?php if (isset($origin) && $origin=="Colombia") echo "selected";?>>Colombia</option>
+					<option <?php if (isset($origin) && $origin=="Dominica") echo "selected";?>>Dominica</option>
+		
+					<option <?php if (isset($origin) && $origin=="Finland") echo "selected";?>>Finland</option>
+					<option <?php if (isset($origin) && $origin=="France") echo "selected";?>>France</option>
+				
+					<option <?php if (isset($origin) && $origin=="Germany") echo "selected";?>>Germany</option>
+					
+					<option <?php if (isset($origin) && $origin=="Greece") echo "selected";?>>Greece</option>
+					
+					<option <?php if (isset($origin) && $origin=="Hungary") echo "selected";?>>Hungary</option>
+					<option <?php if (isset($origin) && $origin=="Iceland") echo "selected";?>>Iceland</option>
+					<option <?php if (isset($origin) && $origin=="India") echo "selected";?>>India</option>
+					<option <?php if (isset($origin) && $origin=="Indonesia") echo "selected";?>>Indonesia</option>
+					<option <?php if (isset($origin) && $origin=="Iran") echo "selected";?>>Iran</option>
+					<option <?php if (isset($origin) && $origin=="Iraq") echo "selected";?>>Iraq</option>
+					<option <?php if (isset($origin) && $origin=="Ireland {Republic}") echo "selected";?>>Ireland {Republic}</option>
+					<option <?php if (isset($origin) && $origin=="Israel") echo "selected";?>>Israel</option>
+					<option <?php if (isset($origin) && $origin=="Italy") echo "selected";?>>Italy</option>
+					
+					<option <?php if (isset($origin) && $origin=="Japan") echo "selected";?>>Japan</option>
+					
+					<option <?php if (isset($origin) && $origin=="Korea North") echo "selected";?>>Korea North</option>
+					<option <?php if (isset($origin) && $origin=="Korea South") echo "selected";?>>Korea South</option>
+					
+					<option <?php if (isset($origin) && $origin=="Latvia") echo "selected";?>>Latvia</option>
+					
+					<option <?php if (isset($origin) && $origin=="Luxembourg") echo "selected";?>>Luxembourg</option>
+					<option <?php if (isset($origin) && $origin=="Macedonia") echo "selected";?>>Macedonia</option>
+					
+					<option <?php if (isset($origin) && $origin=="Morocco") echo "selected";?>>Morocco</option>
+					
+					<option <?php if (isset($origin) && $origin=="Nepal") echo "selected";?>>Nepal</option>
+					<option <?php if (isset($origin) && $origin=="Netherlands") echo "selected";?>>Netherlands</option>
+					<option <?php if (isset($origin) && $origin=="New Zealand") echo "selected";?>>New Zealand</option>
+					
+					<option <?php if (isset($origin) && $origin=="Nigeria") echo "selected";?>>Nigeria</option>
+					<option <?php if (isset($origin) && $origin=="Norway") echo "selected";?>>Norway</option>
+					<option <?php if (isset($origin) && $origin=="Not in list") echo "selected";?>>Not in list</option>
+
+					<option <?php if (isset($origin) && $origin=="Pakistan") echo "selected";?>>Pakistan</option>
+
+					<option <?php if (isset($origin) && $origin=="South Africa") echo "selected";?>>South Africa</option>
+					
+					<option <?php if (isset($origin) && $origin=="Spain") echo "selected";?>>Spain</option>
+					
+					<option <?php if (isset($origin) && $origin=="Suriname") echo "selected";?>>Suriname</option>
+				
+					<option <?php if (isset($origin) && $origin=="Sweden") echo "selected";?>>Sweden</option>
+					<option <?php if (isset($origin) && $origin=="Switzerland") echo "selected";?>>Switzerland</option>
+					<option <?php if (isset($origin) && $origin=="Syria") echo "selected";?>>Syria</option>
+					<option <?php if (isset($origin) && $origin=="Taiwan") echo "selected";?>>Taiwan</option>
+					
+					<option <?php if (isset($origin) && $origin=="Turkey") echo "selected";?>>Turkey</option>
+				
+					
+					<option <?php if (isset($origin) && $origin=="Ukraine") echo "selected";?>>Ukraine</option>
+					<option <?php if (isset($origin) && $origin=="United Kingdom") echo "selected";?>>United Kingdom</option>
+					<option <?php if (isset($origin) && $origin=="United States") echo "selected";?>>United States</option>
+					<option <?php if (isset($origin) && $origin=="Uruguay") echo "selected";?>>Uruguay</option>
+					<option <?php if (isset($origin) && $origin=="Uzbekistan") echo "selected";?>>Uzbekistan</option>
+					
+					<option <?php if (isset($origin) && $origin=="Vietnam") echo "selected";?>>Vietnam</option>
+				
 				</select>
-		<h4>5. What are your favourite TV genre(s)?</h4>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Comedy" name="genre[]" id="genre">Comedy</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Drama" name="genre[]" id="genre">Drama</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Entertainment" name="genre[]" id="genre">Entertainment</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Factual" name="genre[]" id="genre">Factual</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Music" name="genre[]" id="genre">Music</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Religion" name="genre[]" id="genre">Religion &amp; Ethics</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Sport" name="genre[]" id="genre">Sport</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Other" name="genre[]" onclick="var input = document.getElementById('genreOther'); if(this.checked){ input.disabled = false; input.focus();}else{input.disabled=true;}">Other:  <input class="form-control" id="genreOther" name="genreOther" disabled="disabled"/></label></div>
+				<br><br>
+				
+				<img src="/images/continue.png" onClick="show_next_questions(1)" width="125" height="75"><br><br>
+		</div>
+		<div id="preferences"  style="display:none;"><br><br><br>
+		<div id="using_application">
+		<h3 >Before using the application please answer the following questions:</h3> </div>
+		<h4>5. What are your favourite TV genre(s)?</h4><font size="3" color="red"><span id="genre-error"></span></font>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Comedy"  <?php if (isset($genre) && (strpos($genre,"Comedy") !== false))  echo "checked";?> name="genre[]" id="genre">Comedy</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Drama" <?php if (isset($genre) && (strpos($genre, 'Drama') !== false))  echo "checked";?> name="genre[]" id="genre">Drama</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Entertainment" <?php if (isset($genre) && (strpos($genre, 'Entertainment')) !== false)  echo "checked";?> name="genre[]" id="genre">Entertainment</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Factual" <?php if (isset($genre) && (strpos($genre, 'Factual') !== false))  echo "checked";?> name="genre[]" id="genre">Factual</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Music" <?php if (isset($genre) && (strpos($genre, 'Music') !== false))  echo "checked";?> name="genre[]" id="genre">Music</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Religion" <?php if (isset($genre) && (strpos($genre, 'Religion') !== false))  echo "checked";?> name="genre[]" id="genre">Religion &amp; Ethics</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Sport" <?php if (isset($genre) && (strpos($genre, 'Sport') !== false))  echo "checked";?> name="genre[]" id="genre">Sport</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" value="Other" <?php if (isset($genre) && (strpos($genre, 'Other') !== false))  echo "checked";?> name="genre[]" onclick="var input = document.getElementById('genreOther'); if(this.checked){ input.disabled = false; input.focus();}else{input.disabled=true;}">Other:  <input class="form-control" id="genreOther" name="genreOther" disabled="disabled"/></label></div>
 
 		<br>
-		<h4>6. What are your favourite TV programme format(s)?</h4>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]" value="Animation" id="format">Animation</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Discussion_talk" id="format">Discussion &amp; Talk</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Documentaries" id="format">Documentaries</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Films" id="format">Films</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Games_Quizzes" id="format">Games &amp; Quizzes</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="News" id="format">News &amp; Bullettins</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Reality" id="format">Reality</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="PerformanceEvent" id="format">Performance &amp; Event</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="magazinesandreviews" id="format">Magazines &amp; Reviews</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="talentshows" id="format">Talent shows</label></div>
-		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]" value="Other" onclick="var input = document.getElementById('formatOther'); if(this.checked){ input.disabled = false; input.focus();}else{input.disabled=true;}">Other:  <input class="form-control" id="formatOther" name="formatOther" disabled="disabled"/></label></div>
-		<h4>7. How much time do you typically spend watching TV daily?</h4>
-		<h6 style="color:red;">(Including your regular TV, Phone, Tablet and online services.)</h6>
-		<table class="table" style="width:50%">
+		<h4>6. What are your favourite TV programme format(s)?</h4><font size="3" color="red"><span id="format-error"></span></font>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]" value="Animation" <?php if (isset($format) && (strpos($format,"Animation") !== false))  echo "checked";?> id="format">Animation</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Discussion_talk" <?php if (isset($format) && (strpos($format,"Discussion_talk") !== false))  echo "checked";?> id="format">Discussion &amp; Talk</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Documentaries" <?php if (isset($format) && (strpos($format,"Documentaries") !== false))  echo "checked";?> id="format">Documentaries</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Films" <?php if (isset($format) && (strpos($format,"Films") !== false))  echo "checked";?> id="format">Films</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Games_Quizzes" <?php if (isset($format) && (strpos($format,"Games_Quizzes") !== false))  echo "checked";?> id="format">Games &amp; Quizzes</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="News" <?php if (isset($format) && (strpos($format,"News") !== false))  echo "checked";?> id="format">News &amp; Bullettins</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="Reality" <?php if (isset($format) && (strpos($format,"Reality") !== false))  echo "checked";?> id="format">Reality</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="PerformanceEvent" <?php if (isset($format) && (strpos($format,"PerformanceEvent") !== false))  echo "checked";?> id="format">Performance &amp; Event</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="magazinesandreviews" <?php if (isset($format) && (strpos($format,"magazinesandreviews") !== false))  echo "checked";?> id="format">Magazines &amp; Reviews</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]"  value="talentshows" <?php if (isset($format) && (strpos($format,"talentshows") !== false))  echo "checked";?> id="format">Talent shows</label></div>
+		<div class="checkbox"><label class="checkbox"><input type="checkbox" name="format[]" value="Other" <?php if (isset($format) && (strpos($format,"Other") !== false))  echo "checked";?> onclick="var input = document.getElementById('formatOther'); if(this.checked){ input.disabled = false; input.focus();}else{input.disabled=true;}">Other:  <input class="form-control" id="formatOther" name="formatOther" disabled="disabled"/></label></div>
+		<h4>7. How much time do you typically spend watching TV during the weekdays?</h4>
+		<h5>(Including your regular TV, Phone, Tablet and online services.)</h5><font size="3" color="red"><span id="weekdays-error"></span></font>
+		<table class="table" style="width:80%">
 			<thead>
 				<tr>
 					<th width="10%"></th>
@@ -4685,31 +5130,31 @@ function get_format(format){
 			  <td ><h5>Morning</h5></td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="morning" value="Morning-Never"</label>
+					 <label class="radio"><input type="radio" name="morning" <?php if (isset($morning) && $morning=="Morning-Never") echo "checked";?> value="Morning-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="morning" value="Morning-Occasionally"</label>
+					 <label class="radio"><input type="radio" name="morning" <?php if (isset($morning) && $morning=="Morning-Occasionally") echo "checked";?> value="Morning-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="morning" value="Morning-1h"></label>
+					 <label class="radio"><input type="radio" name="morning" <?php if (isset($morning) && $morning=="Morning-1h") echo "checked";?> value="Morning-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="morning" value="Morning-12h"></label>
+					 <label class="radio"><input type="radio" name="morning" <?php if (isset($morning) && $morning=="Morning-12h") echo "checked";?> value="Morning-12h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="morning" value="Morning-24h"></label>
+					 <label class="radio"><input type="radio" name="morning" <?php if (isset($morning) && $morning=="Morning-24h") echo "checked";?> value="Morning-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="morning" value="Morning-4h"></label>
+					 <label class="radio"><input type="radio" name="morning" <?php if (isset($morning) && $morning=="Morning-4h") echo "checked";?> value="Morning-4h"></label>
 				 </div>
 			   </td>
 			</tr>
@@ -4717,31 +5162,31 @@ function get_format(format){
 			  <td ><h5>Afternoon</h5></td>
 			   <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-Never"</label>
+					 <label class="radio"><input type="radio" name="afternoon" <?php if (isset($afternoon) && $afternoon=="Afternoon-Never") echo "checked";?> value="Afternoon-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-Occasionally"</label>
+					 <label class="radio"><input type="radio" name="afternoon" <?php if (isset($afternoon) && $afternoon=="Afternoon-Occasionally") echo "checked";?> value="Afternoon-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-1h"></label>
+					 <label class="radio"><input type="radio" name="afternoon" <?php if (isset($afternoon) && $afternoon=="Afternoon-1h") echo "checked";?> value="Afternoon-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-12h"></label>
+					 <label class="radio"><input type="radio" name="afternoon" <?php if (isset($afternoon) && $afternoon=="Afternoon-12h") echo "checked";?> value="Afternoon-12h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-24h"></label>
+					 <label class="radio"><input type="radio" name="afternoon" <?php if (isset($afternoon) && $afternoon=="Afternoon-24h") echo "checked";?> value="Afternoon-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="afternoon" value="Afternoon-4h"></label>
+					 <label class="radio"><input type="radio" name="afternoon" <?php if (isset($afternoon) && $afternoon=="Afternoon-4h") echo "checked";?> value="Afternoon-4h"></label>
 				 </div>
 			   </td>
 			</tr>
@@ -4749,31 +5194,31 @@ function get_format(format){
 			  <td ><h5>Evening</h5></td>
 			   <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="evening" value="Evening-Never"</label>
+					 <label class="radio"><input type="radio" name="evening" <?php if (isset($evening) && $evening=="Evening-Never") echo "checked";?> value="Evening-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="evening" value="Evening-Occasionally"</label>
+					 <label class="radio"><input type="radio" name="evening" <?php if (isset($evening) && $evening=="Evening-Occasionally") echo "checked";?> value="Evening-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="evening" value="Evening-1h"></label>
+					 <label class="radio"><input type="radio" name="evening" <?php if (isset($evening) && $evening=="Evening-1h") echo "checked";?> value="Evening-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="evening" value="Evening-12h"></label>
+					 <label class="radio"><input type="radio" name="evening" <?php if (isset($evening) && $evening=="Evening-12h") echo "checked";?> value="Evening-12h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="evening" value="Evening-24h"></label>
+					 <label class="radio"><input type="radio" name="evening" <?php if (isset($evening) && $evening=="Evening-24h") echo "checked";?> value="Evening-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="evening" value="Evening-4h"></label>
+					 <label class="radio"><input type="radio" name="evening" <?php if (isset($evening) && $evening=="Evening-4h") echo "checked";?> value="Evening-4h"></label>
 				 </div>
 			   </td>
 			</tr>
@@ -4781,31 +5226,31 @@ function get_format(format){
 			  <td ><h5>Night</h5></td>
 			   <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="night" value="Night-Never"</label>
+					 <label class="radio"><input type="radio" name="night" <?php if (isset($night) && $night=="Night-Never") echo "checked";?> value="Night-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="night" value="Night-Occasionally"</label>
+					 <label class="radio"><input type="radio" name="night" <?php if (isset($night) && $night=="Night-Occasionally") echo "checked";?> value="Night-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="night" value="Night-1h"></label>
+					 <label class="radio"><input type="radio" name="night" <?php if (isset($night) && $night=="Night-1h") echo "checked";?> value="Night-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="night" value="Night-12h"></label>
+					 <label class="radio"><input type="radio" name="night" <?php if (isset($night) && $night=="Night-12h") echo "checked";?> value="Night-12h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="night" value="Night-24h"></label>
+					 <label class="radio"><input type="radio" name="night" <?php if (isset($night) && $night=="Night-24h") echo "checked";?> value="Night-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="night" value="Night-4h"></label>
+					 <label class="radio"><input type="radio" name="night" <?php if (isset($night) && $night=="Night-4h") echo "checked";?> value="Night-4h"></label>
 				 </div>
 			   </td>
 			   
@@ -4813,263 +5258,253 @@ function get_format(format){
 			</tbody>
 		</table>
 		<br>
-			
-		<h4> 8. On which days do you typically watch TV? </h4>
-		<h6 style="color:red;">(Including your regular TV, Phone, Tablet and online services.)</h6>
-		<table class="table" style="width:50%">
+		<h4>8. How much time do you typically spend watching TV in the weekend?</h4>
+		<h5>(Including your regular TV, Phone, Tablet and online services.)</h5><font size="3" color="red"><span id="weekend-error"></span></font>	
+		<table class="table" style="width:80%">
 			<thead>
 				<tr>
-			 <th width="10%"></th>
+					<th width="10%"></th>
 					<th width="15%" text-align="center"><h5>Never</h5></th>
 					<th width="15%" text-align="center"><h5>Occasionally</h5></th>
 					<th width="15%" text-align="center"><h5>Less than<br>1 hour</h5></th>
 					<th width="15%" text-align="center"><h5>1 - 2<br>hours</h5></th>
 					<th width="15%" text-align="center"><h5>2 - 4<br>hours</h5></th>
 					<th width="15%" text-align="center"><h5>More than<br>4 hours</h5></th>
-			</tr>
+				</tr>
 			</thead>
 			<tbody>
-				<tr> 
-				<td ><h5>Monday</h5></td>
-				 <td >
+				<tr>
+			  <td ><h5>Morning</h5></td>
+			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Monday" value="Monday-Never"</label>
-				</div>
-			  </td>
-			   <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Monday" value="Monday-Occasionally"></label>
+					 <label class="radio"><input type="radio" name="morning_weekend" <?php if (isset($morning_weekend) && $morning_weekend =="Morning-Never") echo "checked";?> value="Morning-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Monday" value="Monday-1h"></label>
+					 <label class="radio"><input type="radio" name="morning_weekend" <?php if (isset($morning_weekend) && $morning_weekend =="Morning-Occasionally") echo "checked";?> value="Morning-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Monday" value="Monday-12h"></label>
+					 <label class="radio"><input type="radio" name="morning_weekend" <?php if (isset($morning_weekend) && $morning_weekend =="Morning-1h") echo "checked";?> value="Morning-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Monday" value="Monday-24h"></label>
+					 <label class="radio"><input type="radio" name="morning_weekend" <?php if (isset($morning_weekend) && $morning_weekend =="Morning-12h") echo "checked";?> value="Morning-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="morning_weekend" <?php if (isset($morning_weekend) && $morning_weekend =="Morning-24h") echo "checked";?> value="Morning-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Monday" value="Monday-4h"></label>
+					 <label class="radio"><input type="radio" name="morning_weekend" <?php if (isset($morning_weekend) && $morning_weekend =="Morning-4h") echo "checked";?> value="Morning-4h"></label>
 				 </div>
 			   </td>
-			  </tr>
+			</tr>
 				<tr>
-				<td ><h5>Tuesday</h5></td>
-				 <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-Never"</label>
-				</div>
-			  </td>
+			  <td ><h5>Afternoon</h5></td>
 			   <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-Occasionally"></label>
+					 <label class="radio"><input type="radio" name="afternoon_weekend" <?php if (isset($afternoon_weekend) && $afternoon_weekend =="Afternoon-Never") echo "checked";?> value="Afternoon-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-1h"></label>
+					 <label class="radio"><input type="radio" name="afternoon_weekend" <?php if (isset($afternoon_weekend) && $afternoon_weekend =="Afternoon-Occasionally") echo "checked";?> value="Afternoon-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-12h"></label>
+					 <label class="radio"><input type="radio" name="afternoon_weekend" <?php if (isset($afternoon_weekend) && $afternoon_weekend =="Afternoon-1h") echo "checked";?> value="Afternoon-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-24h"></label>
+					 <label class="radio"><input type="radio" name="afternoon_weekend" <?php if (isset($afternoon_weekend) && $afternoon_weekend =="Afternoon-12h") echo "checked";?> value="Afternoon-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="afternoon_weekend" <?php if (isset($afternoon_weekend) && $afternoon_weekend =="Afternoon-24h") echo "checked";?> value="Afternoon-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Tuesday" value="Tuesday-4h"></label>
+					 <label class="radio"><input type="radio" name="afternoon_weekend" <?php if (isset($afternoon_weekend) && $afternoon_weekend =="Afternoon-4h") echo "checked";?> value="Afternoon-4h"></label>
 				 </div>
 			   </td>
-			  </tr>
+			</tr>
 				<tr>
-				<td ><h5>Wednesday</h5></td>
-				 <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-Never"</label>
-				</div>
-			  </td>
+			  <td ><h5>Evening</h5></td>
 			   <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-Occasionally"></label>
+					 <label class="radio"><input type="radio" name="evening_weekend" <?php if (isset($evening_weekend) && $evening_weekend =="Evening-Never") echo "checked";?> value="Evening-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-1h"></label>
+					 <label class="radio"><input type="radio" name="evening_weekend" <?php if (isset($evening_weekend) && $evening_weekend =="Evening-Occasionally") echo "checked";?> value="Evening-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-12h"></label>
+					 <label class="radio"><input type="radio" name="evening_weekend" <?php if (isset($evening_weekend) && $evening_weekend =="Evening-1h") echo "checked";?> value="Evening-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-24h"></label>
+					 <label class="radio"><input type="radio" name="evening_weekend" <?php if (isset($evening_weekend) && $evening_weekend =="Evening-12h") echo "checked";?> value="Evening-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="evening_weekend" <?php if (isset($evening_weekend) && $evening_weekend =="Evening-24h") echo "checked";?> value="Evening-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Wednesday" value="Wednesday-4h"></label>
+					 <label class="radio"><input type="radio" name="evening_weekend" <?php if (isset($evening_weekend) && $evening_weekend =="Evening-4h") echo "checked";?> value="Evening-4h"></label>
 				 </div>
 			   </td>
-			  </tr>
+			</tr>
 				<tr>
-				<td ><h5>Thursday</h5></td>
-				 <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-Never"</label>
-				</div>
-			  </td>
+			  <td ><h5>Night</h5></td>
 			   <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-Occasionally"></label>
+					 <label class="radio"><input type="radio" name="night_weekend" <?php if (isset($night_weekend) && $night_weekend =="Night-Never") echo "checked";?> value="Night-Never"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-1h"></label>
+					 <label class="radio"><input type="radio" name="night_weekend" <?php if (isset($night_weekend) && $night_weekend =="Night-Occasionally") echo "checked";?> value="Night-Occasionally"</label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-12h"></label>
+					 <label class="radio"><input type="radio" name="night_weekend" <?php if (isset($night_weekend) && $night_weekend =="Night-1h") echo "checked";?> value="Night-1h"></label>
 				</div>
 			  </td>
 			  <td >
 				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-24h"></label>
+					 <label class="radio"><input type="radio" name="night_weekend" <?php if (isset($night_weekend) && $night_weekend =="Night-12h") echo "checked";?> value="Night-12h"></label>
+				</div>
+			  </td>
+			  <td >
+				<div class="radio" >
+					 <label class="radio"><input type="radio" name="night_weekend" <?php if (isset($night_weekend) && $night_weekend =="Night-24h") echo "checked";?> value="Night-24h"></label>
 				</div>
 			   <td width = "10%">
 				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Thursday" value="Thursday-4h"></label>
+					 <label class="radio"><input type="radio" name="night_weekend" <?php if (isset($night_weekend) && $night_weekend =="Night-4h") echo "checked";?> value="Night-4h"></label>
 				 </div>
 			   </td>
-			  </tr>
-				<tr>
-				<td ><h5>Friday</h5></td>
-				 <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Friday" value="Friday-Never"</label>
-				</div>
-			  </td>
-			   <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Friday" value="Friday-Occasionally"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Friday" value="Friday-1h"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Friday" value="Friday-12h"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Friday" value="Friday-24h"></label>
-				</div>
-			   <td width = "10%">
-				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Friday" value="Friday-4h"></label>
-				 </div>
-			   </td>
-			  </tr>
-				<tr>
-				<td ><h5>Saturday</h5></td>
-				 <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-Never"</label>
-				</div>
-			  </td>
-			   <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-Occasionally"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-1h"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-12h"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-24h"></label>
-				</div>
-			   <td>
-				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Saturday" value="Saturday-4h"></label>
-				 </div>
-			   </td>
-			  </tr>
-				<tr>
-				<td ><h5>Sunday</h5></td>
-				 <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-Never"</label>
-				</div>
-			  </td>
-			   <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-Occasionally"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-1h"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-12h"></label>
-				</div>
-			  </td>
-			  <td >
-				<div class="radio" >
-					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-24h"></label>
-				</div>
-			   <td >
-				 <div class="radio">
-					 <label class="radio"><input type="radio" name="Sunday" value="Sunday-4h"></label>
-				 </div>
-			   </td>
-			  </tr>
+			   
+			</tr>
 			</tbody>
 		</table>
-		<input type="submit" value="Submit" style="position:absolute;left:40%;width:100px; height:50px;">
+		<br>
+		<br><br>
+		<img src="/images/back.png" onClick="show_next_questions(0)" width="125" height="75">
+	    <input type="image" src="/images/start_using.png" value="Start using the application" style="position:absolute;left:30%;width:150px; height:100px;"><br><br><br><br><br><br>
+
+		</div>
 	</form>
 	</div>
+   <div id="format_list"style="display: none;">
+	<div id="programmes" class="slidey recomended object">
+        <span class="sub_title">Documentaries</span>
+        <span class="more_blue" id="moreblue"><a id="moreprogrammes" onclick='show_more_programmes();'>View All &triangledown;</a></span>
+        <div id="docs"> </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
+      <div id="side-b" class="slidey recomended object">
+        <span class="sub_title">Quizzes</span> 
+        <span class="more_blue" id="moreblue1"><a id="moreprogs" onclick='show_more_recommendations();'>View All &triangledown;</a></span>
+        <div id="quiz"> </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
+	  <div id="content2" class="slidey recomended object">
+        <span class="sub_title">Reality</span>
+        <span  class="more_blue" id="moreblue3"><a id="morerecently" onclick='show_history();'>View All &triangledown;</a></span>
+        <div id="real">
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
+	  <div id="content" class="slidey recomended object">
+        <span class="sub_title">Events</span>
+        <span class="more_blue" id="moreblue2"><a id='moreformat' onclick='show_format();'>View All &triangledown;</a></span>
+        <div id="talent">    
+        </div>
+         <div class="clear"></div>
+      </div>
+       <div class="clear"></div>
+  </div>
+     <div id="genre_list"style="display: none;">
+	<div id="programmes" class="slidey recomended object">
+        <span class="sub_title">Factual</span>
+        <span class="more_blue" id="moreblue"><a id="moreprogrammes" onclick='show_more_programmes();'>View All &triangledown;</a></span>
+        <div id="fac"> </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
+      <div id="side-b" class="slidey recomended object">
+        <span class="sub_title">Comedy</span> 
+        <span class="more_blue" id="moreblue1"><a id="moreprogs" onclick='show_more_recommendations();'>View All &triangledown;</a></span>
+        <div id="comedies"> </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
+	  <div id="content2" class="slidey recomended object">
+        <span class="sub_title">Drama</span>
+        <span  class="more_blue" id="moreblue3"><a id="morerecently" onclick='show_history();'>View All &triangledown;</a></span>
+        <div id="drama">
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="clear"></div>
+	  
+	  <div id="content" class="slidey recomended object">
+        <span class="sub_title">Entertainment</span>
+        <span class="more_blue" id="moreblue2"><a id='moreformat' onclick='show_format();'>View All &triangledown;</a></span>
+        <div id="entertainment">    
+        </div>
+         <div class="clear"></div>
+      </div>
+       <div class="clear"></div>
+  </div>
   <div id="inner"style="display: none;">
    
 
     <div id="browser">
 	  <div id="programmes" class="slidey recomended object">
-        <span class="sub_title">Programmes</span> 
+        <span class="sub_title">Programmes</span>
         <span class="more_blue" id="moreblue"><a id="moreprogrammes" onclick='show_more_programmes();'>View All &triangledown;</a></span>
         <div id="programs"> </div>
         <div class="clear"></div>
       </div>
       <div class="clear"></div>
 	  
+	    <div id="content" class="slidey recomended object">
+        <span class="sub_title">Suggestions for you
+		</span>
+        <span class="more_blue" id="moreblue2"><a id='moreformat' onclick='show_format();'>View All &triangledown;</a></span>
+        <div id="results_format">
+         
+        </div>
+         <div class="clear"></div>
+      </div>
+       <div class="clear"></div>
+	   
       <div id="side-b" class="slidey recomended object">
         <span class="sub_title">Shared by friends</span> 
         <span class="more_blue" id="moreblue1"><a id="moreprogs" onclick='show_more_recommendations();'>View All &triangledown;</a></span>
@@ -5077,45 +5512,12 @@ function get_format(format){
         <div class="clear"></div>
       </div>
       <div class="clear"></div>
-     
-	  <div id="content" class="slidey recomended object">
-        <span class="sub_title">Select programmes by format:
-			<select onchange="get_format(this);">
-			<option value="Interview">Interview</option>
-			<option value="Documentary">Documentary</option>
-	
-			</select>
-		</span>
-		</span>
-        <span class="more_blue" id="moreblue2"><a id='moreformat' onclick='show_format();'>View All &triangledown;</a></span>
-        <div id="results_format">
-         <div class='dotted_box'> </div>
-        </div>
-         <div class="clear"></div>
-      </div>
-       <div class="clear"></div>
-	   
-      <div id="content3" class="slidey recomended object">
-        <span class="sub_title">Select programmes by genre:
-			<select onchange="get_genre(this);">
-				<option value="Comedy">Comedy</option>
-				<option value="Sitcom">Sitcom</option>
-			</select>
-		</span>
-        <span class="more_blue" id="moreblue4"><a id='moregenre' onclick='show_genre();'>View All &triangledown;</a></span>
-        <div id="results_genre">
-         <div class='dotted_box'> </div>
-        </div>
-         <div class="clear"></div>
-      </div>
-       <div class="clear"></div>
-      <!-- <br clear="all" /> -->
+  
 
       <div id="content2" class="slidey recomended object">
         <span class="sub_title">RECENTLY VIEWED</span>
         <span  class="more_blue" id="moreblue3"><a id="morerecently" onclick='show_history();'>View All &triangledown;</a></span>
-        <div id="history">
-          <div class='dotted_box'> </div>
+        <div id="history2">
         </div>
         <div class="clear"></div>
       </div>
@@ -5166,6 +5568,7 @@ function get_format(format){
 <div id="roster_wrapper">
   
   <div id="side-a">
+	<div onclick="Logout();">LOGOUT</div>
     <div id="tv"></div>
       <!-- <br clear="both"/> -->
       <h3 class="contrast">Online</h3>

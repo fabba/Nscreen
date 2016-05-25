@@ -23,13 +23,12 @@
 	$id = $_POST['id'];
 	$bbcorted = $_POST['bbcorted'];
 	$dislike = $_POST['dislike'];
-	
-	if(intval($dislike) == 1){
-		$qry="INSERT INTO dislikes(member_id,talk_id,bbc_or_ted) values ($member_id , $id , $bbcorted  )";
-		$result=mysql_query($qry);
-		$qry="DELETE FROM likes where member_id=$member_id and talk_id=$id and bbc_or_ted =$bbcorted ";
-		$result=mysql_query($qry);
+	if($dislike == 1){
+		$qry="INSERT INTO dislike(member_id,talk_id,bbc_or_ted) value ($member_id , $id , $bbcorted  )";
+	}else{
+		$qry="DELETE FROM dislike where member_id=$member_id and talk_id=$id and bbc_or_ted =$bbcorted ";
 	}
+	$result=mysql_query($qry);
 	echo $result;
 	exit();
 ?>	

@@ -382,7 +382,7 @@ function userLogin(){
        url: 'logout.php',
        async : false,
          success: function(){
-           window.location.href= "http://localhost/N-Screen/";
+           window.location.href= "http://localhost";
          }
       });
     //console.log("RESPUESTA  "+ lalala):

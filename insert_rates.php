@@ -22,6 +22,7 @@
 	$id = intval($_POST['id']);
 	$startTime = intval($_POST['start']);
 	$duration = intval($_POST['duration']);
+	$end = $startTime + $duration;
 	$section = $_POST['section'];
 	$rating = intval($_POST['rating']);
 	$long = intval($_POST['too-long']);
@@ -29,6 +30,13 @@
 	$enough = intval($_POST['long-enough']);
 	$spoilers = intval($_POST['spoilers']);
 	$member_id = intval($_SESSION['SESS_MEMBER_ID']);
+	$qry="SELECT * FROM watched WHERE programme_id=$id and member_id=$member_id";
+	$result=mysql_query($qry); 
+	if($result) {
+		$qry="UPDATE watched set updated=now(),watched=1,start=$startTime,end=$end,section='$section' WHERE programme_id=$id and member_id=$member_id";
+		$result=mysql_query($qry); 
+
+	}
 	$qry="INSERT INTO rating(programme_id,start_point,duration,section,member_id,interesting,long_enough,too_short,too_long,spoilers) values ($id, $startTime, $duration, '$section', $member_id , $rating, $enough, $short, $long, $spoilers  )";
 	mysql_query($qry);
 	

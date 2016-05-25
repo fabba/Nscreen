@@ -280,7 +280,7 @@ div.container {overflow: auto;}
 
   background: #2B383F;
   /*height: 330px;*/
-  width: 470px;
+  width: 400px;
   height: 353px;
 
 }
@@ -554,11 +554,16 @@ cursor: pointer;
   border-bottom: 1px dotted white;
 }
 
+td {
+    text-align: center; /* center checkbox horizontally */
+    vertical-align: middle; /* center checkbox vertically */
+}
 
 #new_overlay{
   position:absolute;
   top:32px;
-  width:100%;
+  left:5%;
+  width:90%;
   color:white;
   min-height:50%;
   background: #2B383F;

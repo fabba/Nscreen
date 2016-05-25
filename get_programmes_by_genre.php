@@ -19,7 +19,7 @@
 	}
 	$genre = $_POST['genre'];
 	//Create query
-	$qry="SELECT * FROM bbc_programs WHERE genre = '$genre' ORDER BY RAND() LIMIT 20";
+	$qry="SELECT * FROM bbc_programs WHERE genre like '%$genre%' ORDER BY RAND() LIMIT 20";
 	
 	$result=mysql_query($qry);  
 	//Check whether the query was successful or not

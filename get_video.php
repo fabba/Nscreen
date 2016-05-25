@@ -42,6 +42,18 @@
 			die("Query failed");
 		}
 	}else{
+		$qry="SELECT * FROM watched WHERE programme_id=$id and member_id=$member_id";
+		$result=mysql_query($qry); 
+		if($result) {
+			if(mysql_num_rows($result) == 0) {
+				$qry="INSERT INTO watched (programme_id,member_id,viewed,updated) values($id,$member_id,1,now())";
+				$result=mysql_query($qry); 
+			}
+			else{
+				$qry="UPDATE watched set updated=now() WHERE programme_id=$id and member_id=$member_id";
+				$result=mysql_query($qry); 
+			}
+		}
 		$qry="SELECT * FROM bbc_programs WHERE id='$id'";
 		$keywords = [];
 		$keys = [];
@@ -106,7 +118,7 @@
 				}
 				$end = $start + $dur_scene;
 				$keys = [];
-				echo json_encode(array($bbc[0],$bbc[11],$bbc[1],$bbc[2],$bbc[10],$bbc[4],0,$start,$end,$sec,$keys_whole,$keys));
+				echo json_encode(array($bbc[0],$bbc[11],$bbc[1],$bbc[2],$bbc[3],$bbc[4],0,$start,$end,$sec,$keys_whole,$keys));
 			}else {
 				exit();
 			}

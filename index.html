@@ -88,22 +88,7 @@ function init(){
      $("#roster_wrapper").hide();
      create_buttons();
    }
-   $("#group_name").html(my_group);
-   $("#grp_link").html(clean_loc+"#"+my_group);
-   $("#grp_link").attr("href",clean_loc+"#"+my_group);
-
-   window.location.hash=my_group;
-       $.ajax({
-        url: "set_group.php",
-        type: "POST",
-        data: "group="+my_group,
-        dataType: "json",
-        success: function (response) {
-            console.log("Th group is = " + response);
-        }
-      });
-   //getting a possible initialization set of videos
-
+  
    $(document).ready(function() { 
      $.ajax({
           url: 'get_tedtalks.php',
@@ -510,8 +495,41 @@ the internet. <br /> <br />
 
               
       <div id="ask_name" style="display:none;" class="alert">
+		  <div id="formLogin" class="formLogin" style="display:block;">
+              
+              <h2 class="inline1_sub">Login</h2>
+              <div class="login">
+                <form id="myname" name="loginForm" method="post" action="login-exec.php">
+                <div class="input-field">   
+                 <input id="login" name="login" type="username" class="textfield" value="" required="required" placeholder="Username" />
+                </div>
+                <div class="input-field"> 
+                 <input id="password" name="password" type="password" class="textfield" value="" required="required" placeholder="Password" />
+                </div>
+                 <button class='bluesubmit' type="submit" name="Submit" value="Login">Login!</button>
+               </form>
+              </div>
+                 <div class="divider">
+                      <span></span>
+                      <p>
 
-          <div id="registration" class="registration">
+                          or
+
+                      </p>
+                      <span></span>
+
+                  </div>
+                  <div class="formFacebook">
+                    <div id="fbimage">
+
+                      <img id="fbicon"src="images/facebook_login.jpg" href="#" onclick="userLogin();"/>
+
+                      <!-- <fb:login-button data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button> -->
+                    </div>
+                  </div>
+                  <div id="gotologin"><span id="whatever">Not a member? <span style="font-weight: bold;" id="colorsignin" onclick="swap('registration','formLogin'); return false">Sign up</span></span></div>
+            </div>
+          <div id="registration" class="registration" style="display:none;">
                   <h2 class="inline1_sub">Sign up</h2>
                   <div class="formRegistration">
 
@@ -559,41 +577,7 @@ the internet. <br /> <br />
                   <div id="gotologin"><span id="whatever">Already a user? <span style="font-weight: bold;" id="colorsignin" onclick="swap('formLogin','registration'); return false">Sign in</span></span></div>
             </div>
 
-            <div id="formLogin" class="formLogin">
-              
-              <h2 class="inline1_sub">Login</h2>
-              <div id="joining">You are joining group <span id="group_name"></span></div>
-              <div class="login">
-                <form id="myname" name="loginForm" method="post" action="login-exec.php">
-                <div class="input-field">   
-                 <input id="login" name="login" type="username" class="textfield" value="" required="required" placeholder="Username" />
-                </div>
-                <div class="input-field"> 
-                 <input id="password" name="password" type="password" class="textfield" value="" required="required" placeholder="Password" />
-                </div>
-                 <button class='bluesubmit' type="submit" name="Submit" value="Login">Login!</button>
-               </form>
-              </div>
-                 <div class="divider">
-                      <span></span>
-                      <p>
-
-                          or
-
-                      </p>
-                      <span></span>
-
-                  </div>
-                  <div class="formFacebook">
-                    <div id="fbimage">
-
-                      <img id="fbicon"src="images/facebook_login.jpg" href="#" onclick="userLogin();"/>
-
-                      <!-- <fb:login-button data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button> -->
-                    </div>
-                  </div>
-                  <div id="gotologin"><span id="whatever">Not a member? <span style="font-weight: bold;" id="colorsignin" onclick="swap('registration','formLogin'); return false">Sign up</span></span></div>
-            </div>
+          
       </div>
   
     
