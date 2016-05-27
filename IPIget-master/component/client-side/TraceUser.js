@@ -70,7 +70,7 @@ function getElementPosition(id) {
 	if(!ele ){
 		 return {top: top, left: left};
 	}
-    while(ele.tagName != "BODY") {
+    while(typeof element != "null" && typeof element != "undefined" && ele.tagName != "BODY") {
         top += ele.offsetTop;
         left += ele.offsetLeft;
         ele = ele.offsetParent;

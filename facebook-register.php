@@ -35,17 +35,37 @@
 	$cpassword = null;
 
 	$facebook_id = $_POST['facebook_id'];
-	$recommendations= mysql_real_escape_string($_POST['recommendations']);
-		
+	//$recommendations= mysql_real_escape_string($_POST['recommendations']);
+	echo $facebook_id;
 	// //Check for duplicate facebook ID and login directly
 	if($facebook_id != '') {
-		$qry = "SELECT * FROM members WHERE facebook_id='$facebook_id'";
+		$qry = "SELECT * FROM members WHERE facebook_id=$facebook_id";
 		$result = mysql_query($qry);
 		if($result) {
 			if(mysql_num_rows($result) > 0) {
 				$_SESSION['FACEBOOKID'] = $facebook_id;
-				header("location: facebook-login.php");
-				exit();
+				$qry="SELECT * FROM members WHERE facebook_id=$facebook_id";
+	$result=mysql_query($qry);
+	//Check whether the query was successful or not
+	if($result) {
+		if(mysql_num_rows($result) == 1) {
+			//Login Successful
+			session_regenerate_id();
+			$member = mysql_fetch_assoc($result);
+			$_SESSION['SESS_MEMBER_ID'] = $member['member_id'];
+			$_SESSION['SESS_FIRST_NAME'] = $member['firstname'];
+			$_SESSION['SESS_LAST_NAME'] = $member['lastname'];
+			session_write_close();
+			echo $facebook_id;
+			exit();
+		}else {
+			//Login failed
+			header('Location: /'); 
+			exit();
+		}
+	}else {
+		die(mysql_error());
+	}
 			}
 			//@mysql_free_result($result);
 		}
@@ -55,7 +75,7 @@
 	}
 	
 	//Create INSERT query
-	$qry = "INSERT INTO members(firstname, lastname, login, passwd, facebook_id) VALUES('$fname','$lname','$login','$password','$facebook_id')";
+	$qry = "INSERT INTO members(firstname, lastname, login, passwd, facebook_id) VALUES('$fname','$lname','$login','$password',$facebook_id)";
 	$result = @mysql_query($qry);
 	
 	//Check whether the query was successful or not
@@ -63,16 +83,36 @@
 
 		//Insert user based content to be tracked
 		//$recommendations = file_get_contents("data/recommendations.js");
-		$recently_viewed = file_get_contents("data/recently_viewed.js");
-		$watch_later = file_get_contents("data/watch_later.js");
-		$like_dislike = file_get_contents("data/like_dislike.js");
-		$shared_by_friends = file_get_contents("data/shared_by_friends.js");
-		$sql = "INSERT INTO content(recommendations, recently_viewed, watch_later, like_dislike, shared_by_friends) VALUES ('$recommendations', '$recently_viewed', '$watch_later', '$like_dislike', '$shared_by_friends')"; //Insert every read line from txt to mysql database
-		mysql_query($sql);
+		//$recently_viewed = file_get_contents("data/recently_viewed.js");
+		//$watch_later = file_get_contents("data/watch_later.js");
+		//$like_dislike = file_get_contents("data/like_dislike.js");
+		//$shared_by_friends = file_get_contents("data/shared_by_friends.js");
+		//$sql = "INSERT INTO content(recommendations, recently_viewed, watch_later, like_dislike, shared_by_friends) VALUES ('$recommendations', '$recently_viewed', '$watch_later', '$like_dislike', '$shared_by_friends')"; //Insert every read line from txt to mysql database
+		//mysql_query($sql);
 
-		$_SESSION['FACEBOOKID'] = $facebook_id;
-		header("location: facebook-login.php");
-		exit();
+		$qry="SELECT * FROM members WHERE facebook_id=$facebook_id";
+	$result=mysql_query($qry);
+	//Check whether the query was successful or not
+	if($result) {
+		if(mysql_num_rows($result) == 1) {
+			//Login Successful
+			session_regenerate_id();
+			$member = mysql_fetch_assoc($result);
+			$_SESSION['SESS_MEMBER_ID'] = $member['member_id'];
+			$_SESSION['SESS_FIRST_NAME'] = $member['firstname'];
+			$_SESSION['SESS_LAST_NAME'] = $member['lastname'];
+			session_write_close();
+			echo $facebook_id;
+			exit();
+		}else {
+			//Login failed
+			header('Location: /'); 
+			exit();
+		}
+	}else {
+		die(mysql_error());
+	}
+
 	}
 	else {
 		die("Query failed");

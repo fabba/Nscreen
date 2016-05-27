@@ -4924,10 +4924,35 @@ function show_more_format(){
 <nav class="navbar">
  
   <div id="header" class="navbar-brand page-scroll">
-  	
-    <a href="javascript:show_browse_programmes()" style='font-family:"Kaushan Script","Helvetica Neue",Helvetica,Arial,cursive'>N-SCREEN</a>
+  	<div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand page-scroll" href="javascript:show_browse_programmes()" style='font-family:"Kaushan Script","Helvetica Neue",Helvetica,Arial,cursive'>N-SCREEN</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                   
+                    <li>
+                        <a class="page-scroll" href="javascript:show_profile_page();" style='font-family:"Kaushan Script","Helvetica Neue",Helvetica,Arial,cursive'><?php echo $_SESSION['SESS_FIRST_NAME']; ?> </a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="javascript:Logout();"><i class="fa fa-sign-out fa-5" aria-hidden="true"></i></a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+    <!--<a href="javascript:show_browse_programmes()" style='font-family:"Kaushan Script","Helvetica Neue",Helvetica,Arial,cursive'>N-SCREEN</a>
     <a href="javascript:show_profile_page();" style='right:50px;position:absolute;text-align:right;margin-right:3%;font-family:"Kaushan Script","Helvetica Neue",Helvetica,Arial,cursive'><?php echo $_SESSION['SESS_FIRST_NAME']; ?> 
-    <a href="javascript:Logout();"><i class="fa fa-sign-out fa-5" aria-hidden="true" style='right:50px;position:absolute;text-align:right;'></i></a>
+    <a href="javascript:Logout();"><i class="fa fa-sign-out fa-5" aria-hidden="true" style='right:50px;position:absolute;text-align:right;'></i></a>-->
 	</div>
   
 </nav>
@@ -4940,12 +4965,12 @@ function show_more_format(){
 
 <div id="container">
 
-	<div id="questions" <!--style="position:absolute;left:20%;display: none;"-->>
+	<div id="questions">
 	<div id="welcome" style="position:absolute;left:10%; right :20%; display: none;">
 	<br><br>
 	<form class="form-horizontal">
 	<div class="form-group">
-    <h1 style="text-align:center;" >Welcome!</h1>
+    <h1 style="text-align:center;">Welcome!</h1>
     <p style="font-size:16px">This is a video recommender study. This study is performed at the VU University Amsterdam. You are a participant in an experiment to understand how long users need to view a video to decide whether they are interested in watching it further or not. The videos selected in this experiment are BBC videos from the period of April, 19th to May 19th, 2016 (excluding children's videos and news bulletins). 
 </p>
 		<p style="font-size:16px">As it is the first time you are using this application, we are going to ask you some questions about yourself and your video watching behaviour.</p>

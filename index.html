@@ -322,14 +322,11 @@ function userLogin(){
     $.ajax({
         url: "facebook-register.php",
         type: "POST",
-        data: {facebook_id: id, firstname: name, recommendations : JSON.stringify(starting_data)},
+        data: {facebook_id: id, firstname: name},
         // data: "facebook_id="+id+"&firstname="+name+"&recommendations="+JSON.stringify(starting_data),
         dataType: "json",
         success: function (response) {
-            create_buttons();
-            //add_name();
-            //SHOULD REDIRECT TO US ONLY AREA---HAVE TO WORK ON IT
-            window.location.href= "http://localhost/N-Screen/member-index.php";
+            window.location.href = "http://www.n-screen.crowdtruth.org/member-index.php";
         }
       });
   }

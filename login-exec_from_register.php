@@ -46,7 +46,7 @@
 				exit();
 			}else {
 				//Login failed
-				header("location: login-failed.php");
+				header('Location: /'); 
 				exit();
 			}
 		}else {
@@ -97,7 +97,7 @@
 				//Login failed
 				$errmsg_arr[] = 'Username or password not correct';
 				$errflag = true;
-				header("location: login-failed.php");
+				header('Location: /');  
 				exit();
 			}
 		}else {
